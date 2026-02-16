@@ -1,3 +1,5 @@
+// src/app/workflows/[workflowId]/page.tsx
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -8,8 +10,8 @@ import { WorkflowForm } from "@/components/workflows/WorkflowForm";
 type LoadState = "loading" | "error" | "ready";
 
 export default function EditWorkflowPage({
-                                             params,
-                                         }: {
+    params,
+}: {
     params: { workflowId: string };
 }) {
     const [state, setState] = useState<LoadState>("loading");

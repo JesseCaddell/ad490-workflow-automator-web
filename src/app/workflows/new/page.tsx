@@ -1,3 +1,5 @@
+// src/app/workflows/new/page.tsx
+
 import { WorkflowForm } from "@/components/workflows/WorkflowForm";
 
 export default function NewWorkflowPage() {
