@@ -1,9 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { createWorkflow, updateWorkflow, type Workflow } from "@/lib/api";
 import { getDemoScope } from "@/lib/demo/demoScope";
-import { ApiError } from "@/lib/api";
 import {
     SUPPORTED_ACTION_TYPES,
     SUPPORTED_TRIGGER_EVENTS,
@@ -39,39 +38,44 @@ function defaultParamsFor(type: SupportedActionType): Record<string, unknown> {
 }
 
 function validateAction(step: ActionStep): string | null {
-    if (!step.type) return "Action type is required.";
+    if (!step.type) return "Select an action type.";
 
     if (step.type === "addLabel") {
-        const label = (step.params as any).label;
+        const label = step.params.label;
         if (typeof label !== "string" || label.trim().length === 0) {
-            return "addLabel requires params.label (string).";
+            return "Label is required.";
         }
     }
 
     if (step.type === "addComment") {
-        const body = (step.params as any).body;
+        const body = step.params.body;
         if (typeof body !== "string" || body.trim().length === 0) {
-            return "addComment requires params.body (string).";
+            return "Comment text is required.";
         }
     }
 
     if (step.type === "setProjectStatus") {
-        const status = (step.params as any).status;
+        const status = step.params.status;
         if (typeof status !== "string" || status.trim().length === 0) {
-            return "setProjectStatus requires params.status (string).";
+            return "Status is required.";
         }
     }
 
     return null;
 }
 
+type FieldErrors = {
+    name?: string;
+    triggerEvent?: string;
+    actions?: string; // general error
+    actionErrors: Array<string | null>; // per-action error
+};
+
 export function WorkflowForm({ mode, initial }: Props) {
     const scope = useMemo(() => getDemoScope(), []);
+    const submitLockRef = useRef(false);
 
     const [name, setName] = useState<string>(initial?.name ?? "");
-    const [description, setDescription] = useState<string>(
-        initial?.description ?? ""
-    );
     const [enabled, setEnabled] = useState<boolean>(initial?.enabled ?? true);
 
     const [triggerEvent, setTriggerEvent] = useState<SupportedTriggerEvent>(() => {
@@ -104,13 +108,59 @@ export function WorkflowForm({ mode, initial }: Props) {
             : [{ type: "addLabel", params: defaultParamsFor("addLabel") }];
     });
 
+    const [touched, setTouched] = useState({
+        name: false,
+        triggerEvent: false,
+        actions: false,
+    });
+
     const [submitting, setSubmitting] = useState(false);
     const [feedback, setFeedback] = useState<{
         kind: "success" | "error";
         message: string;
     } | null>(null);
 
+    const errors: FieldErrors = useMemo(() => {
+        const out: FieldErrors = { actionErrors: [] };
+
+        // name required
+        if (name.trim().length === 0) {
+            out.name = "Name is required.";
+        }
+
+        // trigger must be supported
+        if (!(SUPPORTED_TRIGGER_EVENTS as readonly string[]).includes(triggerEvent)) {
+            out.triggerEvent = "Trigger event is not supported.";
+        }
+
+        // actions required
+        if (actions.length === 0) {
+            out.actions = "Add at least one action.";
+        }
+
+        // per-action validation
+        out.actionErrors = actions.map((a) => validateAction(a));
+
+        // action type must be supported
+        for (let i = 0; i < actions.length; i++) {
+            const type = actions[i]?.type;
+            if (!type) continue;
+            if (!(SUPPORTED_ACTION_TYPES as readonly string[]).includes(type)) {
+                out.actionErrors[i] = "Action type is not supported.";
+            }
+        }
+
+        return out;
+    }, [name, triggerEvent, actions]);
+
+    const isValid =
+        !errors.name &&
+        !errors.triggerEvent &&
+        !errors.actions &&
+        errors.actionErrors.every((e) => e === null);
+
     function addAction() {
+        setTouched((t) => ({ ...t, actions: true }));
         setActions((prev) => [
             ...prev,
             { type: "addLabel", params: defaultParamsFor("addLabel") },
@@ -118,10 +168,12 @@ export function WorkflowForm({ mode, initial }: Props) {
     }
 
     function removeAction(index: number) {
+        setTouched((t) => ({ ...t, actions: true }));
         setActions((prev) => prev.filter((_, i) => i !== index));
     }
 
     function setActionType(index: number, nextType: SupportedActionType) {
+        setTouched((t) => ({ ...t, actions: true }));
         setActions((prev) =>
             prev.map((a, i) =>
                 i === index ? { type: nextType, params: defaultParamsFor(nextType) } : a
@@ -130,49 +182,42 @@ export function WorkflowForm({ mode, initial }: Props) {
     }
 
     function setActionParam(index: number, key: string, value: string) {
+        setTouched((t) => ({ ...t, actions: true }));
         setActions((prev) =>
             prev.map((a, i) =>
-                i === index ? { ...a, params: { ...a.params, [key]: value } } : a
+                i === index
+                    ? { ...a, params: { ...a.params, [key]: value } }
+                    : a
             )
         );
     }
 
     function moveUp(index: number) {
+        setTouched((t) => ({ ...t, actions: true }));
         setActions((prev) => moveItem(prev, index, index - 1));
     }
 
     function moveDown(index: number) {
+        setTouched((t) => ({ ...t, actions: true }));
         setActions((prev) => moveItem(prev, index, index + 1));
     }
 
-    function validateForm(): string | null {
-        if (name.trim().length === 0) return "Name is required.";
-
-        if (!(SUPPORTED_TRIGGER_EVENTS as readonly string[]).includes(triggerEvent)) {
-            return "Trigger event is not supported.";
-        }
-
-        if (actions.length === 0) return "Add at least one action.";
-
-        for (const a of actions) {
-            const err = validateAction(a);
-            if (err) return err;
-        }
-
-        return null;
-    }
-
     async function onSubmit() {
-        const error = validateForm();
-        if (error) {
-            setFeedback({ kind: "error", message: error });
+        // hard lock to prevent double-submit (even ultra fast)
+        if (submitLockRef.current) return;
+        submitLockRef.current = true;
+
+        // force errors to show even if user never focused fields
+        setTouched({ name: true, triggerEvent: true, actions: true });
+        setFeedback(null);
+
+        if (!isValid) {
+            setFeedback({ kind: "error", message: "Fix the errors above before saving." });
+            submitLockRef.current = false;
             return;
         }
 
         setSubmitting(true);
-        setFeedback(null);
-
-        const trimmedDescription = description.trim();
 
         try {
             if (mode === "create") {
@@ -181,51 +226,32 @@ export function WorkflowForm({ mode, initial }: Props) {
                     enabled,
                     trigger: { event: triggerEvent },
                     steps: actions,
-                    ...(trimmedDescription.length > 0
-                        ? { description: trimmedDescription }
-                        : {}),
                 });
-
                 setFeedback({ kind: "success", message: "Workflow created." });
             } else {
-                if (!initial) throw new Error("Missing initial workflow for edit.");
+                if (!initial) {
+                    setFeedback({ kind: "error", message: "Missing initial workflow for edit." });
+                    return;
+                }
 
                 await updateWorkflow(scope, initial.id, {
                     name: name.trim(),
                     enabled,
                     trigger: { event: triggerEvent },
                     steps: actions,
-                    // If cleared, explicitly set to empty string so API updates deterministically
-                    ...(trimmedDescription.length > 0
-                        ? { description: trimmedDescription }
-                        : { description: "" }),
                 });
 
                 setFeedback({ kind: "success", message: "Workflow updated." });
             }
         } catch (err: any) {
-            // Surface server response details so we can fix the real cause.
-            console.error(err);
-            if (err instanceof ApiError) {
-                const extra =
-                    typeof err.details === "string"
-                        ? `\n\nDetails:\n${err.details}`
-                        : err.details
-                            ? `\n\nDetails:\n${JSON.stringify(err.details, null, 2)}`
-                            : "";
-
-                setFeedback({
-                    kind: "error",
-                    message: `${err.message} (HTTP ${err.status})${extra}`,
-                });
-            } else {
-                setFeedback({
-                    kind: "error",
-                    message: err?.message ?? "Failed to submit workflow.",
-                });
-            }
+            setFeedback({
+                kind: "error",
+                message: err?.message ?? "Failed to submit workflow.",
+            });
+        } finally {
+            setSubmitting(false);
+            submitLockRef.current = false;
         }
-
     }
 
     return (
@@ -235,21 +261,16 @@ export function WorkflowForm({ mode, initial }: Props) {
                     <label>Name</label>
                     <input
                         value={name}
+                        onBlur={() => setTouched((t) => ({ ...t, name: true }))}
                         onChange={(e) => setName(e.target.value)}
                         style={{ width: "100%" }}
                         placeholder="e.g. Label WIP PRs"
                     />
-                </div>
-
-                <div>
-                    <label>Description</label>
-                    <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        style={{ width: "100%" }}
-                        rows={3}
-                        placeholder="Optional: what this workflow does"
-                    />
+                    {touched.name && errors.name && (
+                        <p style={{ margin: "0.25rem 0 0", color: "#b00020" }}>
+                            {errors.name}
+                        </p>
+                    )}
                 </div>
 
                 <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
@@ -266,9 +287,8 @@ export function WorkflowForm({ mode, initial }: Props) {
                         <label>Trigger event</label>
                         <select
                             value={triggerEvent}
-                            onChange={(e) =>
-                                setTriggerEvent(e.target.value as SupportedTriggerEvent)
-                            }
+                            onBlur={() => setTouched((t) => ({ ...t, triggerEvent: true }))}
+                            onChange={(e) => setTriggerEvent(e.target.value as SupportedTriggerEvent)}
                             style={{ width: "100%" }}
                         >
                             {SUPPORTED_TRIGGER_EVENTS.map((ev) => (
@@ -277,6 +297,12 @@ export function WorkflowForm({ mode, initial }: Props) {
                                 </option>
                             ))}
                         </select>
+
+                        {touched.triggerEvent && errors.triggerEvent && (
+                            <p style={{ margin: "0.25rem 0 0", color: "#b00020" }}>
+                                {errors.triggerEvent}
+                            </p>
+                        )}
                     </div>
                 </div>
 
@@ -294,93 +320,104 @@ export function WorkflowForm({ mode, initial }: Props) {
                         </button>
                     </div>
 
+                    {touched.actions && errors.actions && (
+                        <p style={{ margin: "0.5rem 0 0", color: "#b00020" }}>
+                            {errors.actions}
+                        </p>
+                    )}
+
                     <div style={{ display: "grid", gap: "0.75rem", marginTop: "0.75rem" }}>
-                        {actions.map((a, idx) => (
-                            <div
-                                key={idx}
-                                style={{
-                                    border: "1px solid #ddd",
-                                    padding: "0.75rem",
-                                    borderRadius: 6,
-                                }}
-                            >
-                                <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-                                    <strong style={{ width: 70 }}>#{idx + 1}</strong>
+                        {actions.map((a, idx) => {
+                            const actionErr = errors.actionErrors[idx];
+                            return (
+                                <div
+                                    key={idx}
+                                    style={{
+                                        border: "1px solid #ddd",
+                                        padding: "0.75rem",
+                                        borderRadius: 6,
+                                    }}
+                                >
+                                    <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                                        <strong style={{ width: 70 }}>#{idx + 1}</strong>
 
-                                    <select
-                                        value={a.type}
-                                        onChange={(e) =>
-                                            setActionType(idx, e.target.value as SupportedActionType)
-                                        }
-                                    >
-                                        {SUPPORTED_ACTION_TYPES.map((t) => (
-                                            <option key={t} value={t}>
-                                                {t}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        <select
+                                            value={a.type}
+                                            onChange={(e) =>
+                                                setActionType(idx, e.target.value as SupportedActionType)
+                                            }
+                                        >
+                                            {SUPPORTED_ACTION_TYPES.map((t) => (
+                                                <option key={t} value={t}>
+                                                    {t}
+                                                </option>
+                                            ))}
+                                        </select>
 
-                                    <div style={{ marginLeft: "auto", display: "flex", gap: "0.5rem" }}>
-                                        <button
-                                            type="button"
-                                            onClick={() => moveUp(idx)}
-                                            disabled={idx === 0}
-                                        >
-                                            Up
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => moveDown(idx)}
-                                            disabled={idx === actions.length - 1}
-                                        >
-                                            Down
-                                        </button>
-                                        <button type="button" onClick={() => removeAction(idx)}>
-                                            Remove
-                                        </button>
+                                        <div style={{ marginLeft: "auto", display: "flex", gap: "0.5rem" }}>
+                                            <button type="button" onClick={() => moveUp(idx)} disabled={idx === 0}>
+                                                Up
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => moveDown(idx)}
+                                                disabled={idx === actions.length - 1}
+                                            >
+                                                Down
+                                            </button>
+                                            <button type="button" onClick={() => removeAction(idx)}>
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ marginTop: "0.75rem" }}>
+                                        {a.type === "addLabel" && (
+                                            <div>
+                                                <label>Label</label>
+                                                <input
+                                                    value={String(a.params.label ?? "")}
+                                                    onChange={(e) => setActionParam(idx, "label", e.target.value)}
+                                                    style={{ width: "100%" }}
+                                                    placeholder="wip"
+                                                />
+                                            </div>
+                                        )}
+
+                                        {a.type === "addComment" && (
+                                            <div>
+                                                <label>Comment body</label>
+                                                <textarea
+                                                    value={String(a.params.body ?? "")}
+                                                    onChange={(e) => setActionParam(idx, "body", e.target.value)}
+                                                    style={{ width: "100%" }}
+                                                    rows={3}
+                                                    placeholder="Push detected (dev seed rule)"
+                                                />
+                                            </div>
+                                        )}
+
+                                        {a.type === "setProjectStatus" && (
+                                            <div>
+                                                <label>Status</label>
+                                                <input
+                                                    value={String(a.params.status ?? "")}
+                                                    onChange={(e) => setActionParam(idx, "status", e.target.value)}
+                                                    style={{ width: "100%" }}
+                                                    placeholder="In Review"
+                                                />
+                                            </div>
+                                        )}
+
+                                        {touched.actions && actionErr && (
+                                            <p style={{ margin: "0.5rem 0 0", color: "#b00020" }}>
+                                                {actionErr}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
-
-                                <div style={{ marginTop: "0.75rem" }}>
-                                    {a.type === "addLabel" && (
-                                        <div>
-                                            <label>Label</label>
-                                            <input
-                                                value={String((a.params as any).label ?? "")}
-                                                onChange={(e) => setActionParam(idx, "label", e.target.value)}
-                                                style={{ width: "100%" }}
-                                                placeholder="wip"
-                                            />
-                                        </div>
-                                    )}
-
-                                    {a.type === "addComment" && (
-                                        <div>
-                                            <label>Comment body</label>
-                                            <textarea
-                                                value={String((a.params as any).body ?? "")}
-                                                onChange={(e) => setActionParam(idx, "body", e.target.value)}
-                                                style={{ width: "100%" }}
-                                                rows={3}
-                                                placeholder="Push detected (dev seed rule)"
-                                            />
-                                        </div>
-                                    )}
-
-                                    {a.type === "setProjectStatus" && (
-                                        <div>
-                                            <label>Status</label>
-                                            <input
-                                                value={String((a.params as any).status ?? "")}
-                                                onChange={(e) => setActionParam(idx, "status", e.target.value)}
-                                                style={{ width: "100%" }}
-                                                placeholder="In Review"
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </section>
 
@@ -391,7 +428,7 @@ export function WorkflowForm({ mode, initial }: Props) {
                             borderRadius: 6,
                             border: "1px solid #ddd",
                             background: feedback.kind === "success" ? "#f2fff2" : "#fff2f2",
-                            color: "#111111",
+                            color: "#111",
                         }}
                     >
                         <strong>{feedback.kind === "success" ? "Success" : "Error"}:</strong>{" "}
@@ -400,12 +437,9 @@ export function WorkflowForm({ mode, initial }: Props) {
                 )}
 
                 <button type="button" onClick={onSubmit} disabled={submitting}>
-                    {submitting
-                        ? "Saving..."
-                        : mode === "create"
-                            ? "Create Workflow"
-                            : "Save Changes"}
+                    {submitting ? "Saving..." : mode === "create" ? "Create Workflow" : "Save Changes"}
                 </button>
+
             </div>
         </div>
     );
