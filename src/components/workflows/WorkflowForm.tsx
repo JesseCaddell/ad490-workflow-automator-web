@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { createWorkflow, updateWorkflow, type Workflow } from "@/lib/api";
 import { getDemoScope } from "@/lib/demo/demoScope";
+import { ApiError } from "@/lib/api";
 import {
     SUPPORTED_ACTION_TYPES,
     SUPPORTED_TRIGGER_EVENTS,
@@ -203,13 +204,28 @@ export function WorkflowForm({ mode, initial }: Props) {
                 setFeedback({ kind: "success", message: "Workflow updated." });
             }
         } catch (err: any) {
-            setFeedback({
-                kind: "error",
-                message: err?.message ?? "Failed to submit workflow.",
-            });
-        } finally {
-            setSubmitting(false);
+            // Surface server response details so we can fix the real cause.
+            console.error(err);
+            if (err instanceof ApiError) {
+                const extra =
+                    typeof err.details === "string"
+                        ? `\n\nDetails:\n${err.details}`
+                        : err.details
+                            ? `\n\nDetails:\n${JSON.stringify(err.details, null, 2)}`
+                            : "";
+
+                setFeedback({
+                    kind: "error",
+                    message: `${err.message} (HTTP ${err.status})${extra}`,
+                });
+            } else {
+                setFeedback({
+                    kind: "error",
+                    message: err?.message ?? "Failed to submit workflow.",
+                });
+            }
         }
+
     }
 
     return (
