@@ -32,4 +32,6 @@ export type PatchWorkflowPayload = {
     name?: string;
     description?: string;
     enabled?: boolean;
+    trigger?: { event: string };
+    steps?: unknown[];
 };

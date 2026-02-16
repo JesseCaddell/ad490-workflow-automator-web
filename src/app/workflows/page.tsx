@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
     listWorkflows,
     deleteWorkflow,
@@ -51,9 +52,12 @@ export default function WorkflowsPage() {
         <main style={{ padding: "2rem" }}>
             <header style={{ display: "flex", justifyContent: "space-between", marginBottom: "1.5rem" }}>
                 <h1>Workflows</h1>
-                <button onClick={() => alert("Navigate to create page (next issue)")}>
-                    Create Workflow
-                </button>
+                <Link href="/workflows/new">
+                    <button>
+                        Create Workflow
+                    </button>
+                </Link>
+
             </header>
 
             {state === "loading" && <p>Loading workflows...</p>}
@@ -95,13 +99,12 @@ export default function WorkflowsPage() {
                                 )}
                             </td>
                             <td>
-                                <button
-                                    onClick={() =>
-                                        alert(`Navigate to edit page for ${wf.id} (next issue)`)
-                                    }
-                                >
-                                    Edit
-                                </button>
+                                <Link href={`/workflows/${wf.id}`}>
+                                    <button>
+                                        Edit
+                                    </button>
+                                </Link>
+
                                 {" "}
                                 <button
                                     onClick={() => handleDelete(wf.id)}
