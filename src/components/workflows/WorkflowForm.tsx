@@ -375,6 +375,7 @@ export function WorkflowForm({ mode, initial }: Props) {
                             borderRadius: 6,
                             border: "1px solid #ddd",
                             background: feedback.kind === "success" ? "#f2fff2" : "#fff2f2",
+                            color: "#111111",
                         }}
                     >
                         <strong>{feedback.kind === "success" ? "Success" : "Error"}:</strong>{" "}
