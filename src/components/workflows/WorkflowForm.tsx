@@ -183,15 +183,11 @@ export function WorkflowForm({ mode, initial }: Props) {
                 await updateWorkflow(scope, initial.id, {
                     name: name.trim(),
                     enabled,
+                    trigger: { event: triggerEvent },
+                    steps: actions,
                 });
 
-                // NOTE: API PATCH currently supports only name/description/enabled.
-                // Trigger + steps editing requires extending validatePatchPayload + PATCH handler.
-                setFeedback({
-                    kind: "success",
-                    message:
-                        "Workflow updated (name/enabled). Trigger/actions editing requires API support.",
-                });
+                setFeedback({ kind: "success", message: "Workflow updated." });
             }
         } catch (err: any) {
             setFeedback({
@@ -233,9 +229,7 @@ export function WorkflowForm({ mode, initial }: Props) {
                         <select
                             value={triggerEvent}
                             onChange={(e) => setTriggerEvent(e.target.value as SupportedTriggerEvent)}
-                            disabled={isEdit}
                             style={{ width: "100%" }}
-                            title={isEdit ? "Editing trigger requires API PATCH support." : undefined}
                         >
                             {SUPPORTED_TRIGGER_EVENTS.map((ev) => (
                                 <option key={ev} value={ev}>
@@ -254,16 +248,10 @@ export function WorkflowForm({ mode, initial }: Props) {
                 <section>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <h2 style={{ margin: 0 }}>Actions</h2>
-                        <button type="button" onClick={addAction} disabled={isEdit}>
+                        <button type="button" onClick={addAction}>
                             Add Action
                         </button>
                     </div>
-
-                    {isEdit && (
-                        <p style={{ marginTop: "0.25rem", color: "#666" }}>
-                            Actions editing is disabled until API PATCH supports steps.
-                        </p>
-                    )}
 
                     <div style={{ display: "grid", gap: "0.75rem", marginTop: "0.75rem" }}>
                         {actions.map((a, idx) => (
@@ -281,7 +269,6 @@ export function WorkflowForm({ mode, initial }: Props) {
                                     <select
                                         value={a.type}
                                         onChange={(e) => setActionType(idx, e.target.value as SupportedActionType)}
-                                        disabled={isEdit}
                                     >
                                         {SUPPORTED_ACTION_TYPES.map((t) => (
                                             <option key={t} value={t}>
@@ -291,17 +278,17 @@ export function WorkflowForm({ mode, initial }: Props) {
                                     </select>
 
                                     <div style={{ marginLeft: "auto", display: "flex", gap: "0.5rem" }}>
-                                        <button type="button" onClick={() => moveUp(idx)} disabled={isEdit || idx === 0}>
+                                        <button type="button" onClick={() => moveUp(idx)} disabled={idx === 0}>
                                             Up
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => moveDown(idx)}
-                                            disabled={isEdit || idx === actions.length - 1}
+                                            disabled={idx === actions.length - 1}
                                         >
                                             Down
                                         </button>
-                                        <button type="button" onClick={() => removeAction(idx)} disabled={isEdit}>
+                                        <button type="button" onClick={() => removeAction(idx)}>
                                             Remove
                                         </button>
                                     </div>
@@ -314,7 +301,6 @@ export function WorkflowForm({ mode, initial }: Props) {
                                             <input
                                                 value={String(a.params.label ?? "")}
                                                 onChange={(e) => setActionParam(idx, "label", e.target.value)}
-                                                disabled={isEdit}
                                                 style={{ width: "100%" }}
                                                 placeholder="wip"
                                             />
@@ -327,7 +313,6 @@ export function WorkflowForm({ mode, initial }: Props) {
                                             <textarea
                                                 value={String(a.params.body ?? "")}
                                                 onChange={(e) => setActionParam(idx, "body", e.target.value)}
-                                                disabled={isEdit}
                                                 style={{ width: "100%" }}
                                                 rows={3}
                                                 placeholder="Push detected (dev seed rule)"
@@ -341,7 +326,6 @@ export function WorkflowForm({ mode, initial }: Props) {
                                             <input
                                                 value={String(a.params.status ?? "")}
                                                 onChange={(e) => setActionParam(idx, "status", e.target.value)}
-                                                disabled={isEdit}
                                                 style={{ width: "100%" }}
                                                 placeholder="In Review"
                                             />
