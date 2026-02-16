@@ -1,11 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-    createWorkflow,
-    updateWorkflow,
-    type Workflow,
-} from "@/lib/api";
+import { createWorkflow, updateWorkflow, type Workflow } from "@/lib/api";
 import { getDemoScope } from "@/lib/demo/demoScope";
 import {
     SUPPORTED_ACTION_TYPES,
@@ -45,21 +41,21 @@ function validateAction(step: ActionStep): string | null {
     if (!step.type) return "Action type is required.";
 
     if (step.type === "addLabel") {
-        const label = step.params.label;
+        const label = (step.params as any).label;
         if (typeof label !== "string" || label.trim().length === 0) {
             return "addLabel requires params.label (string).";
         }
     }
 
     if (step.type === "addComment") {
-        const body = step.params.body;
+        const body = (step.params as any).body;
         if (typeof body !== "string" || body.trim().length === 0) {
             return "addComment requires params.body (string).";
         }
     }
 
     if (step.type === "setProjectStatus") {
-        const status = step.params.status;
+        const status = (step.params as any).status;
         if (typeof status !== "string" || status.trim().length === 0) {
             return "setProjectStatus requires params.status (string).";
         }
@@ -72,6 +68,9 @@ export function WorkflowForm({ mode, initial }: Props) {
     const scope = useMemo(() => getDemoScope(), []);
 
     const [name, setName] = useState<string>(initial?.name ?? "");
+    const [description, setDescription] = useState<string>(
+        initial?.description ?? ""
+    );
     const [enabled, setEnabled] = useState<boolean>(initial?.enabled ?? true);
 
     const [triggerEvent, setTriggerEvent] = useState<SupportedTriggerEvent>(() => {
@@ -92,17 +91,23 @@ export function WorkflowForm({ mode, initial }: Props) {
             const params = (s as any).params;
 
             if (!(SUPPORTED_ACTION_TYPES as readonly string[]).includes(type)) continue;
+
             parsed.push({
                 type,
                 params: typeof params === "object" && params !== null ? params : {},
             } as ActionStep);
         }
 
-        return parsed.length > 0 ? parsed : [{ type: "addLabel", params: defaultParamsFor("addLabel") }];
+        return parsed.length > 0
+            ? parsed
+            : [{ type: "addLabel", params: defaultParamsFor("addLabel") }];
     });
 
     const [submitting, setSubmitting] = useState(false);
-    const [feedback, setFeedback] = useState<{ kind: "success" | "error"; message: string } | null>(null);
+    const [feedback, setFeedback] = useState<{
+        kind: "success" | "error";
+        message: string;
+    } | null>(null);
 
     function addAction() {
         setActions((prev) => [
@@ -126,9 +131,7 @@ export function WorkflowForm({ mode, initial }: Props) {
     function setActionParam(index: number, key: string, value: string) {
         setActions((prev) =>
             prev.map((a, i) =>
-                i === index
-                    ? { ...a, params: { ...a.params, [key]: value } }
-                    : a
+                i === index ? { ...a, params: { ...a.params, [key]: value } } : a
             )
         );
     }
@@ -168,6 +171,8 @@ export function WorkflowForm({ mode, initial }: Props) {
         setSubmitting(true);
         setFeedback(null);
 
+        const trimmedDescription = description.trim();
+
         try {
             if (mode === "create") {
                 await createWorkflow(scope, {
@@ -175,7 +180,11 @@ export function WorkflowForm({ mode, initial }: Props) {
                     enabled,
                     trigger: { event: triggerEvent },
                     steps: actions,
+                    ...(trimmedDescription.length > 0
+                        ? { description: trimmedDescription }
+                        : {}),
                 });
+
                 setFeedback({ kind: "success", message: "Workflow created." });
             } else {
                 if (!initial) throw new Error("Missing initial workflow for edit.");
@@ -185,6 +194,10 @@ export function WorkflowForm({ mode, initial }: Props) {
                     enabled,
                     trigger: { event: triggerEvent },
                     steps: actions,
+                    // If cleared, explicitly set to empty string so API updates deterministically
+                    ...(trimmedDescription.length > 0
+                        ? { description: trimmedDescription }
+                        : { description: "" }),
                 });
 
                 setFeedback({ kind: "success", message: "Workflow updated." });
@@ -199,8 +212,6 @@ export function WorkflowForm({ mode, initial }: Props) {
         }
     }
 
-    const isEdit = mode === "edit";
-
     return (
         <div style={{ maxWidth: 720 }}>
             <div style={{ display: "grid", gap: "1rem" }}>
@@ -211,6 +222,17 @@ export function WorkflowForm({ mode, initial }: Props) {
                         onChange={(e) => setName(e.target.value)}
                         style={{ width: "100%" }}
                         placeholder="e.g. Label WIP PRs"
+                    />
+                </div>
+
+                <div>
+                    <label>Description</label>
+                    <textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        style={{ width: "100%" }}
+                        rows={3}
+                        placeholder="Optional: what this workflow does"
                     />
                 </div>
 
@@ -228,7 +250,9 @@ export function WorkflowForm({ mode, initial }: Props) {
                         <label>Trigger event</label>
                         <select
                             value={triggerEvent}
-                            onChange={(e) => setTriggerEvent(e.target.value as SupportedTriggerEvent)}
+                            onChange={(e) =>
+                                setTriggerEvent(e.target.value as SupportedTriggerEvent)
+                            }
                             style={{ width: "100%" }}
                         >
                             {SUPPORTED_TRIGGER_EVENTS.map((ev) => (
@@ -237,16 +261,17 @@ export function WorkflowForm({ mode, initial }: Props) {
                                 </option>
                             ))}
                         </select>
-                        {isEdit && (
-                            <p style={{ margin: "0.25rem 0 0", color: "#666" }}>
-                                Trigger editing is disabled until API PATCH supports trigger/steps.
-                            </p>
-                        )}
                     </div>
                 </div>
 
                 <section>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                        }}
+                    >
                         <h2 style={{ margin: 0 }}>Actions</h2>
                         <button type="button" onClick={addAction}>
                             Add Action
@@ -268,7 +293,9 @@ export function WorkflowForm({ mode, initial }: Props) {
 
                                     <select
                                         value={a.type}
-                                        onChange={(e) => setActionType(idx, e.target.value as SupportedActionType)}
+                                        onChange={(e) =>
+                                            setActionType(idx, e.target.value as SupportedActionType)
+                                        }
                                     >
                                         {SUPPORTED_ACTION_TYPES.map((t) => (
                                             <option key={t} value={t}>
@@ -278,7 +305,11 @@ export function WorkflowForm({ mode, initial }: Props) {
                                     </select>
 
                                     <div style={{ marginLeft: "auto", display: "flex", gap: "0.5rem" }}>
-                                        <button type="button" onClick={() => moveUp(idx)} disabled={idx === 0}>
+                                        <button
+                                            type="button"
+                                            onClick={() => moveUp(idx)}
+                                            disabled={idx === 0}
+                                        >
                                             Up
                                         </button>
                                         <button
@@ -299,7 +330,7 @@ export function WorkflowForm({ mode, initial }: Props) {
                                         <div>
                                             <label>Label</label>
                                             <input
-                                                value={String(a.params.label ?? "")}
+                                                value={String((a.params as any).label ?? "")}
                                                 onChange={(e) => setActionParam(idx, "label", e.target.value)}
                                                 style={{ width: "100%" }}
                                                 placeholder="wip"
@@ -311,7 +342,7 @@ export function WorkflowForm({ mode, initial }: Props) {
                                         <div>
                                             <label>Comment body</label>
                                             <textarea
-                                                value={String(a.params.body ?? "")}
+                                                value={String((a.params as any).body ?? "")}
                                                 onChange={(e) => setActionParam(idx, "body", e.target.value)}
                                                 style={{ width: "100%" }}
                                                 rows={3}
@@ -324,7 +355,7 @@ export function WorkflowForm({ mode, initial }: Props) {
                                         <div>
                                             <label>Status</label>
                                             <input
-                                                value={String(a.params.status ?? "")}
+                                                value={String((a.params as any).status ?? "")}
                                                 onChange={(e) => setActionParam(idx, "status", e.target.value)}
                                                 style={{ width: "100%" }}
                                                 placeholder="In Review"
@@ -352,7 +383,11 @@ export function WorkflowForm({ mode, initial }: Props) {
                 )}
 
                 <button type="button" onClick={onSubmit} disabled={submitting}>
-                    {submitting ? "Saving..." : mode === "create" ? "Create Workflow" : "Save Changes"}
+                    {submitting
+                        ? "Saving..."
+                        : mode === "create"
+                            ? "Create Workflow"
+                            : "Save Changes"}
                 </button>
             </div>
         </div>
