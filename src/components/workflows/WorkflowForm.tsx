@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { createWorkflow, updateWorkflow, type Workflow } from "@/lib/api";
-import { getDemoScope } from "@/lib/demo/demoScope";
+import { useRepoScope } from "@/lib/repoScope/useRepoScope";
 import {
     SUPPORTED_ACTION_TYPES,
     SUPPORTED_TRIGGER_EVENTS,
@@ -72,7 +72,7 @@ type FieldErrors = {
 };
 
 export function WorkflowForm({ mode, initial }: Props) {
-    const scope = useMemo(() => getDemoScope(), []);
+    const { scope } = useRepoScope();
     const submitLockRef = useRef(false);
 
     const [name, setName] = useState<string>(initial?.name ?? "");

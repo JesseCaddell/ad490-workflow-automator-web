@@ -1,14 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import {
-    listWorkflows,
-    deleteWorkflow,
-    type Workflow,
-} from "@/lib/api";
-
-import { getDemoScope } from "@/lib/demo/demoScope";
+import { listWorkflows, deleteWorkflow, type Workflow } from "@/lib/api";
+import { useRepoScope } from "@/lib/repoScope/useRepoScope";
+import { RepoSelector } from "@/components/repos/RepoSelector";
 
 type LoadState = "idle" | "loading" | "error";
 
@@ -17,7 +12,7 @@ export default function WorkflowsPage() {
     const [state, setState] = useState<LoadState>("idle");
     const [error, setError] = useState<string | null>(null);
 
-    const scope = getDemoScope();
+    const { scope, setScope, options } = useRepoScope();
 
     async function load() {
         try {
@@ -46,18 +41,32 @@ export default function WorkflowsPage() {
 
     useEffect(() => {
         load();
-    }, []);
+    }, [scope.installationId, scope.repositoryId]);
 
     return (
         <main style={{ padding: "2rem" }}>
-            <header style={{ display: "flex", justifyContent: "space-between", marginBottom: "1.5rem" }}>
-                <h1>Workflows</h1>
-                <Link href="/workflows/new">
-                    <button>
+            <header
+                style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: "1rem",
+                    alignItems: "center",
+                    marginBottom: "1.5rem",
+                }}
+            >
+                <div style={{ display: "grid", gap: "0.25rem" }}>
+                    <h1 style={{ margin: 0 }}>Workflows</h1>
+                    <div style={{ color: "#666" }}>
+                        Selected: repo {scope.repositoryId} (install {scope.installationId})
+                    </div>
+                </div>
+
+                <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+                    <RepoSelector value={scope} options={options} onChangeAction={setScope} />
+                    <button onClick={() => (window.location.href = "/workflows/new")}>
                         Create Workflow
                     </button>
-                </Link>
-
+                </div>
             </header>
 
             {state === "loading" && <p>Loading workflows...</p>}
@@ -91,25 +100,12 @@ export default function WorkflowsPage() {
                         <tr key={wf.id} style={{ borderTop: "1px solid #ddd" }}>
                             <td>{wf.name}</td>
                             <td>{wf.trigger?.event}</td>
+                            <td>{wf.enabled ? "Enabled" : "Disabled"}</td>
                             <td>
-                                {wf.enabled ? (
-                                    <span style={{ color: "green" }}>Enabled</span>
-                                ) : (
-                                    <span style={{ color: "gray" }}>Disabled</span>
-                                )}
-                            </td>
-                            <td>
-                                <Link href={`/workflows/${wf.id}`}>
-                                    <button>
-                                        Edit
-                                    </button>
-                                </Link>
-
-                                {" "}
-                                <button
-                                    onClick={() => handleDelete(wf.id)}
-                                    style={{ color: "red" }}
-                                >
+                                <button onClick={() => (window.location.href = `/workflows/${wf.id}`)}>
+                                    Edit
+                                </button>{" "}
+                                <button onClick={() => handleDelete(wf.id)} style={{ color: "red" }}>
                                     Delete
                                 </button>
                             </td>

@@ -5,8 +5,8 @@
 import { use } from "react";
 import { useEffect, useState } from "react";
 import { getWorkflow, type Workflow } from "@/lib/api";
-import { getDemoScope } from "@/lib/demo/demoScope";
 import { WorkflowForm } from "@/components/workflows/WorkflowForm";
+import { useRepoScope } from "@/lib/repoScope/useRepoScope";
 
 type LoadState = "loading" | "error" | "ready";
 
@@ -15,8 +15,14 @@ export default function EditWorkflowPage({
                                          }: {
     params: Promise<{ workflowId: string }> | { workflowId: string };
 }) {
-    const resolvedParams = typeof (params as any).then === "function" ? use(params as Promise<{ workflowId: string }>) : (params as { workflowId: string });
+    const resolvedParams =
+        typeof (params as any).then === "function"
+            ? use(params as Promise<{ workflowId: string }>)
+            : (params as { workflowId: string });
+
     const workflowId = resolvedParams.workflowId;
+
+    const { scope } = useRepoScope();
 
     const [state, setState] = useState<LoadState>("loading");
     const [error, setError] = useState<string | null>(null);
@@ -27,8 +33,9 @@ export default function EditWorkflowPage({
             try {
                 setState("loading");
                 setError(null);
-                const scope = getDemoScope();
+
                 const wf = await getWorkflow(scope, workflowId);
+
                 setWorkflow(wf);
                 setState("ready");
             } catch (err: any) {
@@ -38,7 +45,7 @@ export default function EditWorkflowPage({
         }
 
         load();
-    }, [workflowId]);
+    }, [workflowId, scope.installationId, scope.repositoryId]);
 
     return (
         <main style={{ padding: "2rem" }}>
