@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { RepoSelector } from "@/components/repos/RepoSelector";
 
 type AppShellProps = {
     children: ReactNode;
@@ -63,7 +64,10 @@ export function AppShell({ children }: AppShellProps) {
                             <NavLink key={item.href} href={item.href} label={item.label} />
                         ))}
                     </nav>
+
+                    <RepoSelector />
                 </div>
+
 
                 <GlobalLoadingIndicator />
             </header>

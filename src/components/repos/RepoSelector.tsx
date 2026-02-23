@@ -1,40 +1,65 @@
 "use client";
 
+import { useMemo } from "react";
+import { useRepoScope } from "@/lib/repoScope/useRepoScope";
 import type { RepoScope } from "@/lib/api";
 
-type RepoOption = {
-    label: string;
-    scope: RepoScope;
-};
-
-function isSameScope(a: RepoScope, b: RepoScope) {
+function scopesEqual(a: RepoScope, b: RepoScope) {
     return a.installationId === b.installationId && a.repositoryId === b.repositoryId;
 }
 
-type Props = {
-    value: RepoScope;
-    options: RepoOption[];
-    onChangeAction: (next: RepoScope) => void;
-};
+export function RepoSelector() {
+    const { scope, setScope, options } = useRepoScope();
 
-export function RepoSelector({ value, options, onChangeAction }: Props) {
+    const selectedIndex = useMemo(() => {
+        const idx = options.findIndex((opt) => scopesEqual(opt.scope, scope));
+        return idx >= 0 ? String(idx) : "0";
+    }, [options, scope]);
+
+    const activeLabel = useMemo(() => {
+        const match = options.find((opt) => scopesEqual(opt.scope, scope));
+        return match?.label ?? `Repo (${scope.repositoryId})`;
+    }, [options, scope]);
+
+    function onChange(value: string) {
+        const idx = Number(value);
+        if (!Number.isFinite(idx) || idx < 0 || idx >= options.length) return;
+
+        setScope(options[idx].scope);
+    }
+
+    const hasValidSelection = scope.installationId !== 0 && scope.repositoryId !== 0;
+
     return (
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            <label style={{ fontWeight: 600 }}>Repository</label>
-            <select
-                value={String(options.findIndex((o) => isSameScope(o.scope, value)))}
-                onChange={(e) => {
-                    const idx = Number(e.target.value);
-                    const next = options[idx]?.scope;
-                    if (next) onChangeAction(next);
-                }}
-            >
-                {options.map((opt, idx) => (
-                    <option key={idx} value={String(idx)}>
-                        {opt.label}
-                    </option>
-                ))}
-            </select>
+        <div className="repo-selector" aria-label="Repository scope">
+            <div className="repo-selector__row">
+                <label className="repo-selector__label" htmlFor="repo-selector">
+                    Repo
+                </label>
+
+                <select
+                    id="repo-selector"
+                    className="repo-selector__select"
+                    value={selectedIndex}
+                    onChange={(e) => onChange(e.target.value)}
+                >
+                    {options.map((opt, idx) => (
+                        <option key={`${opt.scope.installationId}:${opt.scope.repositoryId}`} value={String(idx)}>
+                            {opt.label}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            <div className="repo-selector__status" aria-live="polite">
+                {hasValidSelection ? (
+                    <span>
+            Active: <strong>{activeLabel}</strong>
+          </span>
+                ) : (
+                    <span className="repo-selector__muted">No repository selected (env missing)</span>
+                )}
+            </div>
         </div>
     );
 }
