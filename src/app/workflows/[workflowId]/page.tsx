@@ -1,27 +1,15 @@
-// src/app/workflows/[workflowId]/page.tsx
-
 "use client";
 
-import { use } from "react";
 import { useEffect, useState } from "react";
 import { getWorkflow, type Workflow } from "@/lib/api";
 import { WorkflowForm } from "@/components/workflows/WorkflowForm";
 import { useRepoScope } from "@/lib/repoScope/useRepoScope";
+import { RepoScopeGate } from "@/components/repos/RepoScopeGate";
 
 type LoadState = "loading" | "error" | "ready";
 
-export default function EditWorkflowPage({
-                                             params,
-                                         }: {
-    params: Promise<{ workflowId: string }> | { workflowId: string };
-}) {
-    const resolvedParams =
-        typeof (params as any).then === "function"
-            ? use(params as Promise<{ workflowId: string }>)
-            : (params as { workflowId: string });
-
-    const workflowId = resolvedParams.workflowId;
-
+export default function EditWorkflowPage({ params }: { params: { workflowId: string } }) {
+    const { workflowId } = params;
     const { scope } = useRepoScope();
 
     const [state, setState] = useState<LoadState>("loading");
@@ -48,20 +36,14 @@ export default function EditWorkflowPage({
     }, [workflowId, scope.installationId, scope.repositoryId]);
 
     return (
-        <main style={{ padding: "2rem" }}>
+        <RepoScopeGate title="Edit Workflow">
             <h1>Edit Workflow</h1>
 
             {state === "loading" && <p>Loading...</p>}
 
-            {state === "error" && (
-                <div>
-                    <p style={{ color: "red" }}>Error: {error}</p>
-                </div>
-            )}
+            {state === "error" && <p style={{ color: "crimson" }}>Error: {error}</p>}
 
-            {state === "ready" && workflow && (
-                <WorkflowForm mode="edit" initial={workflow} />
-            )}
-        </main>
+            {state === "ready" && workflow && <WorkflowForm mode="edit" initial={workflow} />}
+        </RepoScopeGate>
     );
 }

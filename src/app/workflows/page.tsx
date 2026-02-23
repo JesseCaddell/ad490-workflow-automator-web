@@ -1,28 +1,31 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { listWorkflows, deleteWorkflow, type Workflow } from "@/lib/api";
 import { useRepoScope } from "@/lib/repoScope/useRepoScope";
-import { RepoSelector } from "@/components/repos/RepoSelector";
+import { RepoScopeGate } from "@/components/repos/RepoScopeGate";
 
 type LoadState = "idle" | "loading" | "error";
 
 export default function WorkflowsPage() {
+    const { scope } = useRepoScope();
+
     const [workflows, setWorkflows] = useState<Workflow[]>([]);
     const [state, setState] = useState<LoadState>("idle");
     const [error, setError] = useState<string | null>(null);
-
-    const { scope, setScope, options } = useRepoScope();
 
     async function load() {
         try {
             setState("loading");
             setError(null);
+
             const data = await listWorkflows(scope);
+
             setWorkflows(data);
             setState("idle");
         } catch (err: any) {
-            setError(err.message ?? "Failed to load workflows.");
+            setError(err?.message ?? "Failed to load workflows.");
             setState("error");
         }
     }
@@ -35,53 +38,47 @@ export default function WorkflowsPage() {
             await deleteWorkflow(scope, id);
             await load();
         } catch (err: any) {
-            alert(err.message ?? "Failed to delete workflow.");
+            alert(err?.message ?? "Failed to delete workflow.");
         }
     }
 
     useEffect(() => {
         load();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [scope.installationId, scope.repositoryId]);
 
     return (
-        <main style={{ padding: "2rem" }}>
-            <header
-                style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: "1rem",
-                    alignItems: "center",
-                    marginBottom: "1.5rem",
-                }}
-            >
-                <div style={{ display: "grid", gap: "0.25rem" }}>
+        <RepoScopeGate title="Workflows">
+            <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+                <div style={{ display: "grid", gap: 4 }}>
                     <h1 style={{ margin: 0 }}>Workflows</h1>
-                    <div style={{ color: "#666" }}>
-                        Selected: repo {scope.repositoryId} (install {scope.installationId})
+                    <div style={{ opacity: 0.75, fontSize: 12 }}>
+                        Repo: {scope.repositoryId} · Install: {scope.installationId}
                     </div>
                 </div>
 
-                <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-                    <RepoSelector value={scope} options={options} onChangeAction={setScope} />
-                    <button onClick={() => (window.location.href = "/workflows/new")}>
-                        Create Workflow
-                    </button>
-                </div>
+                <Link className="app-nav-link" href="/workflows/new">
+                    Create Workflow
+                </Link>
             </header>
+
+            <div style={{ height: 16 }} />
 
             {state === "loading" && <p>Loading workflows...</p>}
 
             {state === "error" && (
                 <div>
-                    <p style={{ color: "red" }}>Error: {error}</p>
-                    <button onClick={load}>Retry</button>
+                    <p style={{ color: "crimson" }}>Error: {error}</p>
+                    <button type="button" onClick={load}>
+                        Retry
+                    </button>
                 </div>
             )}
 
             {state === "idle" && workflows.length === 0 && (
                 <div>
                     <p>No workflows yet.</p>
-                    <p>Create your first automation to get started.</p>
+                    <p style={{ opacity: 0.75 }}>Create your first automation to get started.</p>
                 </div>
             )}
 
@@ -97,15 +94,25 @@ export default function WorkflowsPage() {
                     </thead>
                     <tbody>
                     {workflows.map((wf) => (
-                        <tr key={wf.id} style={{ borderTop: "1px solid #ddd" }}>
+                        <tr key={wf.id} style={{ borderTop: "1px solid rgba(230,237,243,0.12)" }}>
                             <td>{wf.name}</td>
-                            <td>{wf.trigger?.event}</td>
+                            <td>{wf.trigger?.event ?? "-"}</td>
                             <td>{wf.enabled ? "Enabled" : "Disabled"}</td>
-                            <td>
-                                <button onClick={() => (window.location.href = `/workflows/${wf.id}`)}>
+                            <td style={{ display: "flex", gap: 8, padding: "8px 0" }}>
+                                <Link className="app-nav-link" href={`/workflows/${wf.id}`}>
                                     Edit
-                                </button>{" "}
-                                <button onClick={() => handleDelete(wf.id)} style={{ color: "red" }}>
+                                </Link>
+                                <button
+                                    type="button"
+                                    onClick={() => handleDelete(wf.id)}
+                                    style={{
+                                        border: "1px solid rgba(230,237,243,0.12)",
+                                        background: "transparent",
+                                        color: "crimson",
+                                        borderRadius: 8,
+                                        padding: "8px 10px",
+                                    }}
+                                >
                                     Delete
                                 </button>
                             </td>
@@ -114,6 +121,6 @@ export default function WorkflowsPage() {
                     </tbody>
                 </table>
             )}
-        </main>
+        </RepoScopeGate>
     );
 }
