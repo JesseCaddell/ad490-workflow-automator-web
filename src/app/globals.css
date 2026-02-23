@@ -1,30 +1,134 @@
-@import "tailwindcss";
+
+/* ---------- App Shell ---------- */
 
 :root {
-  color-scheme: light;
+  --app-bg: #0b0f14;
+  --app-fg: #e6edf3;
+  --app-muted: rgba(230, 237, 243, 0.72);
+  --app-border: rgba(230, 237, 243, 0.12);
+  --app-max-width: 1100px;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 html,
 body {
-  background: #ffffff;
-  color: #111111;
+  height: 100%;
 }
 
-input,
-textarea,
-select,
-button {
-  color: #111111;
+body {
+  margin: 0;
+  background: var(--app-bg);
+  color: var(--app-fg);
 }
 
-input,
-textarea,
-select {
-  background: #ffffff;
-  border: 1px solid #cfcfcf;
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-::placeholder {
-  color: #6b6b6b;
+.app-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(11, 15, 20, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.app-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+}
+
+.app-brand-link {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.app-nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.app-nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  color: var(--app-muted);
+}
+
+.app-nav-link:hover {
+  color: var(--app-fg);
+  border-color: var(--app-border);
+}
+
+.app-nav-link--active {
+  color: var(--app-fg);
+  border-color: var(--app-border);
+}
+
+.app-main {
+  flex: 1;
+  padding: 20px 16px 40px;
+}
+
+.app-container {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+}
+
+/* ---------- Placeholder Global Loading ---------- */
+
+.app-loading {
+  height: 2px;
+  width: 100%;
+  background: transparent;
+  overflow: hidden;
+}
+
+.app-loading-bar {
+  height: 2px;
+  width: 35%;
+  transform: translateX(-100%);
+  background: rgba(230, 237, 243, 0.35);
+  animation: app-loading-slide 1.2s infinite linear;
+}
+
+@keyframes app-loading-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+/* ---------- A11y utilities ---------- */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
