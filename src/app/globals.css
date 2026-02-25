@@ -73,7 +73,7 @@ select:focus {
 .app-root {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
 }
 
 .app-header-inner {
@@ -127,6 +127,31 @@ select:focus {
 .app-container {
   max-width: var(--app-max-width);
   margin: 0 auto;
+}
+
+.app-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.app-topbar {
+  border-bottom: 1px solid var(--app-border);
+  background: var(--app-bg);
+}
+
+.app-topbar__inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+}
+
+.app-topbar__spacer {
+  flex: 1;
 }
 
 /* ---------- Placeholder Global Loading ---------- */
@@ -211,3 +236,83 @@ select:focus {
   color: var(--app-muted);
 }
 
+/* ---------- Sidebar ---------- */
+.sidebar {
+  width: 84px;
+  background: var(--hazy-ink);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar__top {
+  padding: 14px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.sidebar__logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.sidebar__logoMark {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: var(--hazy-mint);
+  opacity: 0.9;
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.sidebar__bottom {
+  margin-top: auto;
+  padding: 14px 0;
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-item {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid transparent;
+}
+
+.sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.10);
+  color: #ffffff;
+}
+
+.sidebar-item--active {
+  background: rgba(209, 235, 219, 0.16);
+  border-color: rgba(209, 235, 219, 0.22);
+  color: #ffffff;
+}
+
+.sidebar-item--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sidebar-item__icon {
+  display: grid;
+  place-items: center;
+}
