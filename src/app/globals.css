@@ -316,3 +316,73 @@ select:focus {
   display: grid;
   place-items: center;
 }
+
+/* ---------- PageHeader ---------- */
+
+.page-header {
+  padding: 18px 0 12px;
+  border-bottom: 1px solid var(--app-border);
+  margin-bottom: 16px;
+}
+
+.page-header__inner {
+  display: grid;
+  grid-template-columns: 1fr minmax(220px, 360px) auto;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-header__left {
+  min-width: 0;
+}
+
+.page-header__title {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0.2px;
+}
+
+.page-header__meta {
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.page-header__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(208, 213, 206, 0.55);
+  border: 1px solid var(--app-border);
+  color: var(--app-fg);
+  font-size: 12px;
+}
+
+.page-header__center {
+  display: flex;
+  justify-content: center;
+}
+
+.page-header__right {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media (max-width: 900px) {
+  .page-header__inner {
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+  }
+
+  .page-header__center {
+    justify-content: flex-start;
+  }
+
+  .page-header__right {
+    justify-content: flex-start;
+  }
+}

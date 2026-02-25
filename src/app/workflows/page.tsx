@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { listWorkflows, deleteWorkflow, type Workflow } from "@/lib/api";
 import { useRepoScope } from "@/lib/repoScope/useRepoScope";
 import { RepoScopeGate } from "@/components/repos/RepoScopeGate";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 type LoadState = "idle" | "loading" | "error";
 
@@ -23,7 +24,6 @@ export default function WorkflowsPage() {
             setError(null);
 
             const data = await listWorkflows(scope);
-
             setWorkflows(data);
             setState("idle");
         } catch (err: any) {
@@ -51,20 +51,14 @@ export default function WorkflowsPage() {
 
     return (
         <RepoScopeGate title="Workflows">
-            <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-                <div style={{ display: "grid", gap: 4 }}>
-                    <h1 style={{ margin: 0 }}>Workflows</h1>
-                    <div style={{ opacity: 0.75, fontSize: 12 }}>
-                        Repo: {scope.repositoryId} · Install: {scope.installationId}
-                    </div>
-                </div>
-
-                <Link className="app-nav-link" href="/workflows/new">
-                    Create Workflow
-                </Link>
-            </header>
-
-            <div style={{ height: 16 }} />
+            <PageHeader
+                title="Workflows"
+                rightSlot={
+                    <Link className="app-nav-link" href="/workflows/new">
+                        Create Workflow
+                    </Link>
+                }
+            />
 
             {state === "loading" && <p>Loading workflows...</p>}
 
@@ -85,7 +79,7 @@ export default function WorkflowsPage() {
             )}
 
             {state === "idle" && workflows.length > 0 && (
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 16 }}>
                     <thead>
                     <tr>
                         <th align="left">Name</th>
@@ -96,7 +90,7 @@ export default function WorkflowsPage() {
                     </thead>
                     <tbody>
                     {workflows.map((wf) => (
-                        <tr key={wf.id} style={{ borderTop: "1px solid rgba(230,237,243,0.12)" }}>
+                        <tr key={wf.id} style={{ borderTop: "1px solid var(--app-border)" }}>
                             <td>{wf.name}</td>
                             <td>{wf.trigger?.event ?? "-"}</td>
                             <td>{wf.enabled ? "Enabled" : "Disabled"}</td>
@@ -108,9 +102,9 @@ export default function WorkflowsPage() {
                                     type="button"
                                     onClick={() => handleDelete(wf.id)}
                                     style={{
-                                        border: "1px solid rgba(230,237,243,0.12)",
+                                        border: "1px solid var(--app-border)",
                                         background: "transparent",
-                                        color: "crimson",
+                                        color: "var(--app-danger)",
                                         borderRadius: 8,
                                         padding: "8px 10px",
                                     }}

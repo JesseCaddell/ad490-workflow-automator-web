@@ -4,7 +4,6 @@
 
 import type { ReactNode } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { RepoSelector } from "@/components/repos/RepoSelector";
 
 type AppShellProps = {
     children: ReactNode;
@@ -28,7 +27,6 @@ export function AppShell({ children }: AppShellProps) {
                 <header className="app-topbar" aria-label="Top bar">
                     <div className="app-topbar__inner">
                         <div className="app-topbar__spacer" />
-                        <RepoSelector />
                     </div>
                     <GlobalLoadingIndicator />
                 </header>
