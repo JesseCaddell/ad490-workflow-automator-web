@@ -1,3 +1,5 @@
+//src/components/layout/AppShell.tsx
+
 "use client";
 
 import Link from "next/link";

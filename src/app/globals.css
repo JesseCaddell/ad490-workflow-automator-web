@@ -1,12 +1,29 @@
+/* src/app/globals.css */
 
 /* ---------- App Shell ---------- */
 
 :root {
-  --app-bg: #0b0f14;
-  --app-fg: #e6edf3;
-  --app-muted: rgba(230, 237, 243, 0.72);
-  --app-border: rgba(230, 237, 243, 0.12);
+  /* HAZY palette */
+  --hazy-ink: #192524;
+  --hazy-teal: #3C5759;
+  --hazy-sage: #959D90;
+  --hazy-mint: #D1EBDB;
+  --hazy-fog: #D0D5CE;
+  --hazy-paper: #EFECE9;
+
+  /* App tokens (use these everywhere) */
+  --app-bg: var(--hazy-paper);          /* page background */
+  --app-surface: #ffffff;               /* cards/panels */
+  --app-surface-2: var(--hazy-fog);     /* subtle regions */
+  --app-fg: var(--hazy-ink);            /* main text */
+  --app-muted: rgba(25, 37, 36, 0.72);  /* muted text */
+  --app-border: rgba(25, 37, 36, 0.16); /* borders */
+  --app-accent: var(--hazy-teal);       /* primary */
+  --app-accent-2: var(--hazy-mint);     /* selected/pills later */
+  --app-danger: #b00020;
+
   --app-max-width: 1100px;
+  color-scheme: light;
 }
 
 * {
@@ -27,6 +44,30 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+  color: var(--app-fg);
+}
+
+input,
+textarea,
+select {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid rgba(60, 87, 89, 0.35); /* hazy-teal glow */
+  outline-offset: 2px;
 }
 
 .app-root {
@@ -52,32 +93,16 @@ a {
   margin-left: auto;
 }
 
-.app-header-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 12px 16px;
-  max-width: var(--app-max-width);
-  margin: 0 auto;
-}
-
 .app-brand-link {
   font-weight: 700;
   letter-spacing: 0.2px;
-}
-
-.app-nav {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
 }
 
 .app-nav-link {
   display: inline-flex;
   align-items: center;
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid transparent;
   color: var(--app-muted);
 }
@@ -85,11 +110,13 @@ a {
 .app-nav-link:hover {
   color: var(--app-fg);
   border-color: var(--app-border);
+  background: rgba(208, 213, 206, 0.35); /* hazy-fog tint */
 }
 
 .app-nav-link--active {
   color: var(--app-fg);
   border-color: var(--app-border);
+  background: rgba(208, 213, 206, 0.55);
 }
 
 .app-main {
@@ -115,7 +142,7 @@ a {
   height: 2px;
   width: 35%;
   transform: translateX(-100%);
-  background: rgba(230, 237, 243, 0.35);
+  background: rgba(60, 87, 89, 0.35);
   animation: app-loading-slide 1.2s infinite linear;
 }
 
@@ -143,11 +170,14 @@ a {
 
 /* ---------- repo-scope ---------- */
 
-.repo-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 220px;
+.repo-selector__select {
+  flex: 1;
+  min-width: 160px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-fg);
 }
 
 .repo-selector__row {

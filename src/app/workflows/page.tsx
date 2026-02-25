@@ -1,3 +1,5 @@
+// src/app/workflows/page.tsx
+
 "use client";
 
 import Link from "next/link";
