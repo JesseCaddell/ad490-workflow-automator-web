@@ -212,9 +212,10 @@ select:focus {
 }
 
 .repo-selector__label {
-  font-size: 12px;
+  font-size: 14px;        /* was 12px */
   color: var(--app-muted);
-  width: 36px;
+  width: auto;            /* stop forcing tiny label column */
+  min-width: 44px;        /* keeps alignment without looking cramped */
 }
 
 .repo-selector__select {
@@ -317,59 +318,56 @@ select:focus {
   place-items: center;
 }
 
-/* ---------- PageHeader ---------- */
+/* ---------- Page Header ---------- */
 
 .page-header {
-  padding: 18px 0 12px;
+  padding: 10px 0 12px;
   border-bottom: 1px solid var(--app-border);
-  margin-bottom: 16px;
 }
 
 .page-header__inner {
   display: grid;
-  grid-template-columns: 1fr minmax(220px, 360px) auto;
-  align-items: center;
-  gap: 16px;
+  grid-template-columns: 1fr auto auto;
+  align-items: end; /* key: bottoms align */
+  column-gap: 18px;
+  row-gap: 10px;
 }
 
+/* left column: title + chip */
 .page-header__left {
-  min-width: 0;
+  display: grid;
+  gap: 6px;
 }
 
 .page-header__title {
   margin: 0;
-  font-size: 22px;
-  letter-spacing: 0.2px;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.15;
 }
 
 .page-header__meta {
-  margin-top: 6px;
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  align-items: center;
 }
 
 .page-header__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(208, 213, 206, 0.55);
+  font-size: 13px;
+  color: var(--app-muted);
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--app-border);
-  color: var(--app-fg);
-  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
 }
 
-.page-header__center {
-  display: flex;
-  justify-content: center;
-}
-
+/* center + right should sit on the same baseline as the chip row */
+.page-header__center,
 .page-header__right {
   display: flex;
+  align-items: flex-end; /* match the chip baseline */
   justify-content: flex-end;
-  gap: 10px;
+  gap: 12px;
+  padding-bottom: 0px;
 }
 
 @media (max-width: 900px) {
@@ -385,4 +383,98 @@ select:focus {
   .page-header__right {
     justify-content: flex-start;
   }
+}
+
+/* ---------- Workflows page ---------- */
+
+.workflows-page {
+  margin-top: 16px; /* spacing between PageHeader and content */
+}
+
+.workflows-page__status {
+  margin: 0;
+  opacity: 0.85;
+}
+
+.workflows-page__error {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  max-width: 720px;
+}
+
+.workflows-page__errorText {
+  margin: 0;
+  color: crimson;
+}
+
+.workflows-page__retry {
+  width: fit-content;
+  border: 1px solid var(--app-border);
+  background: transparent;
+  color: var(--app-fg);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.workflows-page__empty {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  max-width: 720px;
+}
+
+.workflows-page__emptyTitle {
+  margin: 0;
+}
+
+.workflows-page__emptyBody {
+  margin: 0;
+  color: var(--app-muted);
+}
+
+.workflows-page__tableWrap {
+  margin-top: 8px;
+}
+
+/* ---------- Workflows table ---------- */
+
+.workflows-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.workflows-table thead th {
+  padding: 10px 0;
+  color: var(--app-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.workflows-table__row {
+  border-top: 1px solid var(--app-border);
+}
+
+.workflows-table td {
+  padding: 10px 0;
+}
+
+.workflows-table__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.workflows-table__delete {
+  border: 1px solid var(--app-border);
+  background: transparent;
+  color: crimson;
+  border-radius: 8px;
+  padding: 8px 10px;
 }
