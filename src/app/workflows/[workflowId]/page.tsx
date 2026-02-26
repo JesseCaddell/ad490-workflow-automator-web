@@ -4,14 +4,11 @@
 
 import Link from "next/link";
 import { use } from "react";
-import { useEffect, useState } from "react";
-import { getWorkflow, type Workflow } from "@/lib/api";
-import { WorkflowForm } from "@/components/workflows/WorkflowForm";
-import { useRepoScope } from "@/lib/repoScope/useRepoScope";
 import { RepoScopeGate } from "@/components/repos/RepoScopeGate";
 import { PageHeader } from "@/components/layout/PageHeader";
-
-type LoadState = "loading" | "error" | "ready";
+import { WorkflowForm } from "@/components/workflows/WorkflowForm";
+import { useRepoScope } from "@/lib/repoScope/useRepoScope";
+import { useWorkflow } from "@/lib/api/hooks/useWorkflows";
 
 type Props = {
     params: Promise<{ workflowId: string }> | { workflowId: string };
@@ -24,31 +21,9 @@ export default function EditWorkflowPage({ params }: Props) {
             : (params as { workflowId: string });
 
     const workflowId = resolvedParams.workflowId;
-
     const { scope } = useRepoScope();
 
-    const [state, setState] = useState<LoadState>("loading");
-    const [error, setError] = useState<string | null>(null);
-    const [workflow, setWorkflow] = useState<Workflow | null>(null);
-
-    useEffect(() => {
-        async function load() {
-            try {
-                setState("loading");
-                setError(null);
-
-                const wf = await getWorkflow(scope, workflowId);
-
-                setWorkflow(wf);
-                setState("ready");
-            } catch (err: any) {
-                setError(err?.message ?? "Failed to load workflow.");
-                setState("error");
-            }
-        }
-
-        load();
-    }, [workflowId, scope.installationId, scope.repositoryId]);
+    const { workflow, state, error } = useWorkflow(scope, workflowId);
 
     return (
         <RepoScopeGate title="Edit Workflow">
@@ -65,7 +40,9 @@ export default function EditWorkflowPage({ params }: Props) {
 
             {state === "error" && <p style={{ color: "crimson" }}>Error: {error}</p>}
 
-            {state === "ready" && workflow && <WorkflowForm mode="edit" initial={workflow} />}
+            {state === "success" && workflow && (
+                <WorkflowForm mode="edit" initial={workflow} />
+            )}
         </RepoScopeGate>
     );
 }

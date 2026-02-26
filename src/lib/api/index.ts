@@ -1,3 +1,5 @@
+//src/lib/api/index.ts
+
 export { ApiError } from "./apiError";
 export type { RepoScope } from "./http";
 

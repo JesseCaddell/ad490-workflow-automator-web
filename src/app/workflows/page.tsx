@@ -3,51 +3,27 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { listWorkflows, deleteWorkflow, type Workflow } from "@/lib/api";
-import { useRepoScope } from "@/lib/repoScope/useRepoScope";
 import { RepoScopeGate } from "@/components/repos/RepoScopeGate";
 import { PageHeader } from "@/components/layout/PageHeader";
-
-type LoadState = "idle" | "loading" | "error";
+import { useRepoScope } from "@/lib/repoScope/useRepoScope";
+import { useDeleteWorkflow, useWorkflowsList } from "@/lib/api/hooks/useWorkflows";
 
 export default function WorkflowsPage() {
     const { scope } = useRepoScope();
-
-    const [workflows, setWorkflows] = useState<Workflow[]>([]);
-    const [state, setState] = useState<LoadState>("idle");
-    const [error, setError] = useState<string | null>(null);
-
-    async function load() {
-        try {
-            setState("loading");
-            setError(null);
-
-            const data = await listWorkflows(scope);
-            setWorkflows(data);
-            setState("idle");
-        } catch (err: any) {
-            setError(err?.message ?? "Failed to load workflows.");
-            setState("error");
-        }
-    }
+    const { workflows, state, error, reload } = useWorkflowsList(scope);
+    const { remove } = useDeleteWorkflow(scope);
 
     async function handleDelete(id: string) {
         const confirmed = window.confirm("Delete this workflow?");
         if (!confirmed) return;
 
         try {
-            await deleteWorkflow(scope, id);
-            await load();
+            await remove(id);
+            await reload();
         } catch (err: any) {
             alert(err?.message ?? "Failed to delete workflow.");
         }
     }
-
-    useEffect(() => {
-        load();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [scope.installationId, scope.repositoryId]);
 
     return (
         <RepoScopeGate title="Workflows">
@@ -61,18 +37,20 @@ export default function WorkflowsPage() {
             />
 
             <section className="workflows-page">
-                {state === "loading" && <p className="workflows-page__status">Loading workflows...</p>}
+                {state === "loading" && (
+                    <p className="workflows-page__status">Loading workflows...</p>
+                )}
 
                 {state === "error" && (
                     <div className="workflows-page__error">
                         <p className="workflows-page__errorText">Error: {error}</p>
-                        <button type="button" onClick={load} className="workflows-page__retry">
+                        <button type="button" onClick={reload} className="workflows-page__retry">
                             Retry
                         </button>
                     </div>
                 )}
 
-                {state === "idle" && workflows.length === 0 && (
+                {state === "success" && workflows.length === 0 && (
                     <div className="workflows-page__empty">
                         <p className="workflows-page__emptyTitle">No workflows yet.</p>
                         <p className="workflows-page__emptyBody">
@@ -81,7 +59,7 @@ export default function WorkflowsPage() {
                     </div>
                 )}
 
-                {state === "idle" && workflows.length > 0 && (
+                {state === "success" && workflows.length > 0 && (
                     <div className="workflows-page__tableWrap">
                         <table className="workflows-table">
                             <thead>

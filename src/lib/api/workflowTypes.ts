@@ -1,3 +1,5 @@
+//src/lib/api/workflowTypes.ts
+
 export type WorkflowId = string;
 
 export type WorkflowScope = {
