@@ -448,6 +448,7 @@ select:focus {
 .workflows-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed; /* KEY: column widths become predictable */
 }
 
 .workflows-table thead th {
@@ -463,11 +464,45 @@ select:focus {
 
 .workflows-table td {
   padding: 10px 0;
+  vertical-align: middle;
 }
 
+/* Column sizing (tune these numbers if you want tighter/looser) */
+.workflows-table th:nth-child(1),
+.workflows-table td:nth-child(1) {
+  width: 220px; /* Name */
+}
+
+.workflows-table th:nth-child(2),
+.workflows-table td:nth-child(2) {
+  width: 280px; /* Trigger  */
+}
+
+.workflows-table th:nth-child(3),
+.workflows-table td:nth-child(3) {
+  width: 120px; /* Status */
+}
+
+.workflows-table th:nth-child(4),
+.workflows-table td:nth-child(4) {
+  width: 260px; /* Actions  */
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Prevent long text from breaking layout */
+.workflows-table td:nth-child(1),
+.workflows-table td:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Actions layout */
 .workflows-table__actions {
-  display: flex;
+  display: inline-flex;          /* inline so it respects right-align */
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
 }
 
@@ -478,6 +513,8 @@ select:focus {
   border-radius: 8px;
   padding: 8px 10px;
 }
+
+/* ---------- Workflow editor ---------- */
 
 .workflow-editor {
   margin-top: 16px;

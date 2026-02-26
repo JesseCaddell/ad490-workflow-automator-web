@@ -20,6 +20,7 @@ export default function WorkflowsPage() {
     const [workflows, setWorkflows] = useState<Workflow[]>([]);
     const [state, setState] = useState<LoadState>("idle");
     const [error, setError] = useState<string | null>(null);
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
     async function load() {
         try {
@@ -36,11 +37,9 @@ export default function WorkflowsPage() {
     }
 
     async function handleDelete(id: string) {
-        const confirmed = window.confirm("Delete this workflow?");
-        if (!confirmed) return;
-
         try {
             await deleteWorkflow(scope, id);
+            setConfirmDeleteId(null);
             await load();
         } catch (err: any) {
             alert(err?.message ?? "Failed to delete workflow.");
@@ -94,16 +93,38 @@ export default function WorkflowsPage() {
                                     <td>{wf.enabled ? "Enabled" : "Disabled"}</td>
                                     <td>
                                         <div className="workflows-table__actions">
-                                            <Link className="app-nav-link" href={`/workflows/${wf.id}`}>
+                                            <Link className="btn" href={`/workflows/${wf.id}`}>
                                                 Edit
                                             </Link>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDelete(wf.id)}
-                                                className="workflows-table__delete"
-                                            >
-                                                Delete
-                                            </button>
+
+                                            {confirmDeleteId === wf.id ? (
+                                                <>
+                                                    <button
+                                                        type="button"
+                                                        className="btn"
+                                                        onClick={() => setConfirmDeleteId(null)}
+                                                    >
+                                                        Cancel
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn--danger"
+                                                        onClick={() => handleDelete(wf.id)}
+                                                    >
+                                                        Confirm
+                                                    </button>
+
+                                                </>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn--danger"
+                                                    onClick={() => setConfirmDeleteId(wf.id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
