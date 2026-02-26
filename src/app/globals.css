@@ -367,7 +367,7 @@ select:focus {
   align-items: flex-end; /* match the chip baseline */
   justify-content: flex-end;
   gap: 12px;
-  padding-bottom: 0px;
+  /*padding-bottom: 0px;*/
 }
 
 @media (max-width: 900px) {
@@ -669,4 +669,42 @@ select:focus {
 
 .feedback--error {
   border-color: rgba(176, 0, 32, 0.25);
+}
+
+a.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.btn--secondary {
+  background: rgba(208, 213, 206, 0.35);
+  border: 1px solid var(--app-border);
+  color: var(--app-fg);
+}
+
+.btn--secondary:hover {
+  background: rgba(208, 213, 206, 0.55);
+}
+
+.btn--primary:hover {
+  filter: brightness(0.95);
+}
+
+.workflow-editor__submitRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.workflow-editor__createMore {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--app-muted);
+  font-size: 14px;
+  user-select: none;
 }
