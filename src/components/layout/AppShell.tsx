@@ -10,12 +10,9 @@ type AppShellProps = {
 };
 
 function GlobalLoadingIndicator() {
-    return (
-        <div className="app-loading" role="status" aria-live="polite" aria-label="Loading">
-            <span className="sr-only">Loading</span>
-            <div className="app-loading-bar" />
-        </div>
-    );
+    // MVP: keep the "slot" but do not animate nonstop.
+    // Post-MVP: wire to navigation + fetch state if desired.
+    return <div className="app-loading" aria-hidden="true" />;
 }
 
 export function AppShell({ children }: AppShellProps) {
