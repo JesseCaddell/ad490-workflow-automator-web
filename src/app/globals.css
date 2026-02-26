@@ -708,3 +708,37 @@ a.btn {
   font-size: 14px;
   user-select: none;
 }
+
+/* ---------- Reusable UI states ---------- */
+
+.ui-state {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  max-width: 720px;
+}
+
+.ui-state__title {
+  margin: 0;
+  font-weight: 700;
+  color: var(--app-fg);
+}
+
+.ui-state__body {
+  margin: 0;
+  color: var(--app-muted);
+}
+
+.ui-state__actions {
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ui-state--error .ui-state__body {
+  color: var(--app-danger);
+}
