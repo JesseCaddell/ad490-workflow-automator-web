@@ -3,7 +3,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { createWorkflow, updateWorkflow, type Workflow } from "@/lib/api";
+import type { Workflow } from "@/lib/api";
 import { useRepoScope } from "@/lib/repoScope/useRepoScope";
 import {
     SUPPORTED_ACTION_TYPES,
@@ -12,6 +12,7 @@ import {
     type SupportedActionType,
     type SupportedTriggerEvent,
 } from "@/lib/workflows/supported";
+import { useCreateWorkflow, useUpdateWorkflow } from "@/lib/api/hooks/useWorkflows";
 
 type Props = {
     mode: "create" | "edit";
@@ -46,23 +47,17 @@ function validateAction(step: ActionStep): string | null {
 
     if (step.type === "addLabel" || step.type === "removeLabel") {
         const label = step.params.label;
-        if (typeof label !== "string" || label.trim().length === 0) {
-            return "Label is required.";
-        }
+        if (typeof label !== "string" || label.trim().length === 0) return "Label is required.";
     }
 
     if (step.type === "addComment") {
         const body = step.params.body;
-        if (typeof body !== "string" || body.trim().length === 0) {
-            return "Comment text is required.";
-        }
+        if (typeof body !== "string" || body.trim().length === 0) return "Comment text is required.";
     }
 
     if (step.type === "setProjectStatus") {
         const status = step.params.status;
-        if (typeof status !== "string" || status.trim().length === 0) {
-            return "Status is required.";
-        }
+        if (typeof status !== "string" || status.trim().length === 0) return "Status is required.";
     }
 
     return null;
@@ -71,13 +66,16 @@ function validateAction(step: ActionStep): string | null {
 type FieldErrors = {
     name?: string;
     triggerEvent?: string;
-    actions?: string; // general error
-    actionErrors: Array<string | null>; // per-action error
+    actions?: string;
+    actionErrors: Array<string | null>;
 };
 
 export function WorkflowForm({ mode, initial }: Props) {
     const { scope } = useRepoScope();
     const submitLockRef = useRef(false);
+
+    const { create, isLoading: creating } = useCreateWorkflow(scope);
+    const { update, isLoading: updating } = useUpdateWorkflow(scope);
 
     const [name, setName] = useState<string>(initial?.name ?? "");
     const [enabled, setEnabled] = useState<boolean>(initial?.enabled ?? true);
@@ -118,11 +116,7 @@ export function WorkflowForm({ mode, initial }: Props) {
         actions: false,
     });
 
-    const [submitting, setSubmitting] = useState(false);
-    const [feedback, setFeedback] = useState<{
-        kind: "success" | "error";
-        message: string;
-    } | null>(null);
+    const [feedback, setFeedback] = useState<{ kind: "success" | "error"; message: string } | null>(null);
 
     const errors: FieldErrors = useMemo(() => {
         const out: FieldErrors = { actionErrors: [] };
@@ -153,6 +147,8 @@ export function WorkflowForm({ mode, initial }: Props) {
         !errors.triggerEvent &&
         !errors.actions &&
         errors.actionErrors.every((e) => e === null);
+
+    const submitting = creating || updating;
 
     function addAction() {
         setTouched((t) => ({ ...t, actions: true }));
@@ -201,11 +197,9 @@ export function WorkflowForm({ mode, initial }: Props) {
             return;
         }
 
-        setSubmitting(true);
-
         try {
             if (mode === "create") {
-                await createWorkflow(scope, {
+                await create({
                     name: name.trim(),
                     enabled,
                     trigger: { event: triggerEvent },
@@ -215,10 +209,11 @@ export function WorkflowForm({ mode, initial }: Props) {
             } else {
                 if (!initial) {
                     setFeedback({ kind: "error", message: "Missing initial workflow for edit." });
+                    submitLockRef.current = false;
                     return;
                 }
 
-                await updateWorkflow(scope, initial.id, {
+                await update(initial.id, {
                     name: name.trim(),
                     enabled,
                     trigger: { event: triggerEvent },
@@ -233,14 +228,12 @@ export function WorkflowForm({ mode, initial }: Props) {
                 message: err?.message ?? "Failed to submit workflow.",
             });
         } finally {
-            setSubmitting(false);
             submitLockRef.current = false;
         }
     }
 
     return (
         <div className="workflow-editor">
-            {/* Top row card: Name + Enabled */}
             <section className="card">
                 <div className="workflow-editor__topGrid">
                     <div className="workflow-editor__field">
@@ -266,7 +259,6 @@ export function WorkflowForm({ mode, initial }: Props) {
             </section>
 
             <div className="workflow-editor__grid">
-                {/* Left card: Trigger pills */}
                 <section className="card">
                     <div className="card__titleRow">
                         <h2 className="card__title">Trigger event</h2>
@@ -275,7 +267,6 @@ export function WorkflowForm({ mode, initial }: Props) {
                     <div className="pill-grid" role="group" aria-label="Trigger event">
                         {SUPPORTED_TRIGGER_EVENTS.map((ev) => {
                             const selected = triggerEvent === ev;
-
                             return (
                                 <button
                                     key={ev}
@@ -299,7 +290,6 @@ export function WorkflowForm({ mode, initial }: Props) {
                     )}
                 </section>
 
-                {/* Right card: Actions stack */}
                 <section className="card">
                     <div className="card__titleRow">
                         <h2 className="card__title">Actions</h2>
@@ -346,20 +336,11 @@ export function WorkflowForm({ mode, initial }: Props) {
                                     </div>
 
                                     <div className="action-card__body">
-                                        {a.type === "addLabel" && (
+                                        {(a.type === "addLabel" || a.type === "removeLabel") && (
                                             <div className="action-card__row">
-                                                <div className="workflow-editor__label">Label</div>
-                                                <input
-                                                    value={String(a.params.label ?? "")}
-                                                    onChange={(e) => setActionParam(idx, "label", e.target.value)}
-                                                    placeholder="wip"
-                                                />
-                                            </div>
-                                        )}
-
-                                        {a.type === "removeLabel" && (
-                                            <div className="action-card__row">
-                                                <div className="workflow-editor__label">Label to remove</div>
+                                                <div className="workflow-editor__label">
+                                                    {a.type === "addLabel" ? "Label" : "Label to remove"}
+                                                </div>
                                                 <input
                                                     value={String(a.params.label ?? "")}
                                                     onChange={(e) => setActionParam(idx, "label", e.target.value)}
@@ -398,7 +379,6 @@ export function WorkflowForm({ mode, initial }: Props) {
                         })}
                     </div>
 
-                    {/* Add Action button at bottom (moves down as actions grow) */}
                     <div className="actions-footer">
                         <button className="btn" type="button" onClick={addAction}>
                             Add Action
@@ -408,10 +388,7 @@ export function WorkflowForm({ mode, initial }: Props) {
             </div>
 
             {feedback && (
-                <div
-                    className={`feedback ${feedback.kind === "success" ? "feedback--success" : "feedback--error"}`}
-                    style={{ marginTop: 14 }}
-                >
+                <div className={`feedback ${feedback.kind === "success" ? "feedback--success" : "feedback--error"}`} style={{ marginTop: 14 }}>
                     <strong>{feedback.kind === "success" ? "Success" : "Error"}:</strong> {feedback.message}
                 </div>
             )}
