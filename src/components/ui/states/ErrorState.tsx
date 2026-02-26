@@ -4,19 +4,19 @@
 
 type Props = {
     message: string;
-    onRetry?: () => void;
+    onRetryAction?: () => void;
     retryLabel?: string;
 };
 
-export function ErrorState({ message, onRetry, retryLabel = "Retry" }: Props) {
+export function ErrorState({ message, onRetryAction, retryLabel = "Retry" }: Props) {
     return (
         <div className="ui-state ui-state--error" role="alert" aria-live="assertive">
             <p className="ui-state__title">Error</p>
             <p className="ui-state__body">{message}</p>
 
-            {onRetry ? (
+            {onRetryAction ? (
                 <div className="ui-state__actions">
-                    <button type="button" className="btn" onClick={onRetry}>
+                    <button type="button" className="btn" onClick={onRetryAction}>
                         {retryLabel}
                     </button>
                 </div>
