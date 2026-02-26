@@ -1,82 +1,259 @@
-# Workflow Automator Web (MVP)
+# Creating a Workflow (MVP)
 
-This is the web UI for the AD490 Workflow Automator capstone project.
+This document explains how workflows are created and managed in the AD490 Workflow Automator Web application.
 
-It provides a user interface for creating and managing repository-scoped automation workflows backed by the Workflow Automator API.
-
----
-
-## Current MVP Capabilities
-
-- Repository scope selection (demo-backed, future-ready)
-- List workflows
-- Create workflows
-- Edit workflows
-- Delete workflows
-- Client-side validation
-- Server-side validation (API source of truth)
-- Single-trigger workflows
-- Multiple sequential actions (up to 25)
+The Web app is repository-scoped and backed by the Workflow Automator API. The API is the source of truth for validation and storage.
 
 ---
 
-## Running the Web App
+# Before You Start
 
-1. Install dependencies
+## 1. Ensure Repository Scope Is Selected
 
-   npm install
+All workflows are scoped to:
 
-2. Create `.env.local` in project root:
+- installationId
+- repositoryId
 
-   NEXT_PUBLIC_API_BASE_URL=http://localhost:3001  
-   NEXT_PUBLIC_DEMO_INSTALLATION_ID=YOUR_INSTALL_ID  
-   NEXT_PUBLIC_DEMO_REPOSITORY_ID=YOUR_REPO_ID
+You must select a repository before creating or editing workflows.
 
-3. Start the dev server
+If no repository is selected:
 
-   npm run dev
+- Workflow pages are blocked
+- API calls will not execute
+- CRUD operations are disabled
 
-4. Ensure the API is running on port 3001.
-
----
-
-## Creating a Workflow
-
-See section below for step-by-step instructions and examples.
+Scope is persisted in localStorage for the current browser session.
 
 ---
 
-## Creating a Workflow (MVP)
+# Workflow Model (MVP)
 
-(Insert the documentation block we wrote earlier.)
+A workflow consists of:
+
+1. Name
+2. Description (optional)
+3. One trigger
+4. One or more sequential actions (up to 25)
+
+### Current MVP Rules
+
+- Only one trigger per workflow
+- No conditional branching
+- No nested logic editor
+- Actions execute sequentially
+- Maximum of 25 actions
+
+Validation occurs both:
+- Client-side (form validation)
+- Server-side (API validation)
+
+The API is authoritative.
 
 ---
 
-## Architecture Notes
+# Step-by-Step: Creating a Workflow
 
-- All workflows are scoped to `{installationId, repositoryId}`
-- Scope selection is persisted in localStorage
-- API remains the source of truth for validation
-- The UI restricts triggers and action types to supported values
+## Step 1 — Navigate to Workflows
+
+Go to:
+
+/workflows
+
+Click:
+
+"New Workflow"
+
+You will be routed to:
+
+/workflows/new
 
 ---
 
-## MVP Limitations
+## Step 2 — Fill Out Basic Information
 
-- One trigger per workflow
-- No conditional logic editor
-- No branching
-- No multi-repository dashboards
-- Demo repository options sourced from environment variables
+Provide:
+
+- Workflow Name (required)
+- Description (optional)
+
+Workflow name must be unique within the selected repository scope.
 
 ---
 
-## Future Direction
+## Step 3 — Select Trigger
 
-Planned expansions include:
+Choose one trigger type.
 
-- Dynamic repository listing from GitHub installations
-- Condition builder UI
-- Multi-trigger support
-- Action preview / simulation
-- Server-side user preference persistence
+MVP supports a single trigger per workflow.
+
+Examples (depending on backend configuration):
+
+- pull_request.opened
+- pull_request.closed
+- issues.opened
+- push
+
+Trigger values must match backend-supported event types.
+
+---
+
+## Step 4 — Add Actions
+
+Add one or more sequential actions.
+
+Actions execute in order from top to bottom.
+
+Examples (depending on backend implementation):
+
+- addLabel
+- removeLabel
+- commentOnIssue
+- assignUser
+
+You may:
+
+- Add up to 25 actions
+- Reorder actions
+- Remove actions
+
+Each action requires valid parameters.
+
+---
+
+## Step 5 — Submit
+
+When you click Save:
+
+1. Client performs validation
+2. API request is sent to:
+   POST /api/workflows
+3. Server validates payload
+4. On success:
+   - You are redirected to workflow list or detail page
+5. On failure:
+   - Server error is displayed in UI
+
+The API always determines final validity.
+
+---
+
+# Editing a Workflow
+
+Navigate to:
+
+/workflows/{workflowId}
+
+You may:
+
+- Modify name
+- Modify trigger
+- Add/remove/reorder actions
+- Save changes
+
+Update flow:
+
+PUT /api/workflows/:workflowId
+
+Server validates and returns updated workflow.
+
+---
+
+# Deleting a Workflow
+
+From the workflow detail page or list:
+
+DELETE /api/workflows/:workflowId
+
+After deletion:
+
+- Workflow list refreshes
+- Workflow is permanently removed within that repository scope
+
+---
+
+# How Repository Scope Affects Workflows
+
+Workflows are isolated per repository.
+
+This means:
+
+- Switching repository changes visible workflows
+- Workflow IDs are only valid within their repository scope
+- You cannot access workflows across repositories
+
+The backend enforces isolation.
+
+---
+
+# Workflow Execution (High-Level)
+
+The Web UI only manages workflow configuration.
+
+Execution happens in the backend:
+
+1. GitHub webhook received
+2. Backend normalizes event
+3. Rules are evaluated
+4. Matching workflow actions execute
+
+The Web UI does not execute workflows.
+
+---
+
+# Error Handling
+
+The UI supports the following states:
+
+- Loading
+- Empty
+- Validation error
+- Server error
+
+All API errors are normalized through the API client layer.
+
+If the server rejects a workflow:
+
+- The workflow is not created
+- The UI displays the server response
+
+---
+
+# MVP Limitations (Workflow Builder)
+
+- No multi-trigger workflows
+- No AND/OR condition builder
+- No nested logic groups
+- No visual workflow graph
+- No dry-run simulation
+- No workflow version history
+- No audit timeline per workflow
+
+---
+
+# Future Enhancements
+
+Planned improvements include:
+
+- Multiple entry triggers (OR) for compatible event types (e.g., PR events)
+- Condition builder UI (form-based, no graph editor)
+- Workflow execution history per repository
+- Versioning / rollback
+- Multi-repository dashboard
+
+---
+
+# Architecture Reminder
+
+UI Layer:
+src/app/**
+src/components/**
+
+API Client Layer:
+src/lib/api/**
+
+Scope Management:
+src/lib/repoScope/**
+src/components/repos/**
+
+The API remains the single source of truth.
