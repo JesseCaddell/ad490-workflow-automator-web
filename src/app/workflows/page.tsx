@@ -30,7 +30,7 @@ export default function WorkflowsPage() {
             <PageHeader
                 title="Workflows"
                 rightSlot={
-                    <Link className="app-nav-link" href="/workflows/new">
+                    <Link className="btn btn--primary" href="/workflows/new">
                         Create Workflow
                     </Link>
                 }

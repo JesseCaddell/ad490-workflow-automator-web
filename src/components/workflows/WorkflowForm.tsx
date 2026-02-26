@@ -13,6 +13,7 @@ import {
     type SupportedTriggerEvent,
 } from "@/lib/workflows/supported";
 import { useCreateWorkflow, useUpdateWorkflow } from "@/lib/api/hooks/useWorkflows";
+import { useRouter } from "next/navigation";
 
 type Props = {
     mode: "create" | "edit";
@@ -79,6 +80,9 @@ export function WorkflowForm({ mode, initial }: Props) {
 
     const [name, setName] = useState<string>(initial?.name ?? "");
     const [enabled, setEnabled] = useState<boolean>(initial?.enabled ?? true);
+
+    const router = useRouter();
+    const [createMore, setCreateMore] = useState(false);
 
     const [triggerEvent, setTriggerEvent] = useState<SupportedTriggerEvent>(() => {
         const raw = initial?.trigger?.event;
@@ -205,7 +209,13 @@ export function WorkflowForm({ mode, initial }: Props) {
                     trigger: { event: triggerEvent },
                     steps: actions,
                 });
+
                 setFeedback({ kind: "success", message: "Workflow created." });
+
+                if (!createMore) {
+                    router.push("/workflows");
+                    return;
+                }
             } else {
                 if (!initial) {
                     setFeedback({ kind: "error", message: "Missing initial workflow for edit." });
@@ -394,6 +404,18 @@ export function WorkflowForm({ mode, initial }: Props) {
             )}
 
             <div className="workflow-editor__submitRow">
+
+                {mode === "create" && (
+                    <label className="workflow-editor__createMore">
+                        <input
+                            type="checkbox"
+                            checked={createMore}
+                            onChange={(e) => setCreateMore(e.target.checked)}
+                        />
+                        Create more
+                    </label>
+                )}
+
                 <button className="btn btn--primary" type="button" onClick={onSubmit} disabled={submitting}>
                     {submitting ? "Saving..." : mode === "create" ? "Create Workflow" : "Save Changes"}
                 </button>

@@ -11,7 +11,7 @@ export default function NewWorkflowPage() {
             <PageHeader
                 title="Create Workflow"
                 rightSlot={
-                    <Link className="app-nav-link" href="/workflows">
+                    <Link className="btn btn--primary" href="/workflows">
                         Back to Workflows
                     </Link>
                 }
