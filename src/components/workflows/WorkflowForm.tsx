@@ -14,6 +14,7 @@ import {
 } from "@/lib/workflows/supported";
 import { useCreateWorkflow, useUpdateWorkflow } from "@/lib/api/hooks/useWorkflows";
 import { useRouter } from "next/navigation";
+import { Toggle } from "@/components/ui/Toggle";
 
 type Props = {
     mode: "create" | "edit";
@@ -257,14 +258,9 @@ export function WorkflowForm({ mode, initial }: Props) {
                         {touched.name && errors.name && <div className="form-error">{errors.name}</div>}
                     </div>
 
-                    <label className="workflow-editor__toggleRow">
-                        <input
-                            type="checkbox"
-                            checked={enabled}
-                            onChange={(e) => setEnabled(e.target.checked)}
-                        />
-                        Enabled
-                    </label>
+                    <div className="workflow-editor__toggleRow">
+                        <Toggle checked={enabled} onChange={setEnabled} label="Enabled" />
+                    </div>
                 </div>
             </section>
 
