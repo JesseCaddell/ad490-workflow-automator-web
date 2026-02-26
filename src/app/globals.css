@@ -1,30 +1,37 @@
 /* src/app/globals.css */
 
-/* ---------- App Shell ---------- */
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
 
 :root {
   /* HAZY palette */
-  --hazy-ink: #192524;
-  --hazy-teal: #3C5759;
-  --hazy-sage: #959D90;
-  --hazy-mint: #D1EBDB;
-  --hazy-fog: #D0D5CE;
+  --hazy-ink:   #192524;
+  --hazy-teal:  #3C5759;
+  --hazy-sage:  #959D90;
+  --hazy-mint:  #D1EBDB;
+  --hazy-fog:   #D0D5CE;
   --hazy-paper: #EFECE9;
 
   /* App tokens (use these everywhere) */
-  --app-bg: var(--hazy-paper);          /* page background */
-  --app-surface: #ffffff;               /* cards/panels */
-  --app-surface-2: var(--hazy-fog);     /* subtle regions */
-  --app-fg: var(--hazy-ink);            /* main text */
-  --app-muted: rgba(25, 37, 36, 0.72);  /* muted text */
-  --app-border: rgba(25, 37, 36, 0.16); /* borders */
-  --app-accent: var(--hazy-teal);       /* primary */
-  --app-accent-2: var(--hazy-mint);     /* selected/pills later */
-  --app-danger: #b00020;
+  --app-bg:        var(--hazy-paper);         /* page background  */
+  --app-surface:   #ffffff;                   /* cards / panels   */
+  --app-surface-2: var(--hazy-fog);           /* subtle regions   */
+  --app-fg:        var(--hazy-ink);           /* main text        */
+  --app-muted:     rgba(25, 37, 36, 0.72);   /* muted text       */
+  --app-border:    rgba(25, 37, 36, 0.16);   /* borders          */
+  --app-accent:    var(--hazy-teal);          /* primary          */
+  --app-accent-2:  var(--hazy-mint);          /* selected / pills */
+  --app-danger:    #b00020;
 
   --app-max-width: 1100px;
   color-scheme: light;
 }
+
+
+/* ============================================================
+   RESET / BASE
+   ============================================================ */
 
 * {
   box-sizing: border-box;
@@ -70,11 +77,55 @@ select:focus {
   outline-offset: 2px;
 }
 
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+
 .app-root {
   min-height: 100vh;
   display: flex;
   flex-direction: row;
 }
+
+.app-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.app-main {
+  flex: 1;
+  padding: 20px 16px 40px;
+}
+
+.app-container {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+}
+
+/* ---------- Top bar ---------- */
+
+.app-topbar {
+  border-bottom: 1px solid var(--app-border);
+  background: var(--app-bg);
+}
+
+.app-topbar__inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+}
+
+.app-topbar__spacer {
+  flex: 1;
+}
+
+/* ---------- Header / nav ---------- */
 
 .app-header-inner {
   display: flex;
@@ -86,16 +137,15 @@ select:focus {
   margin: 0 auto;
 }
 
+.app-brand-link {
+  font-weight: 700;
+}
+
 .app-nav {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   margin-left: auto;
-}
-
-.app-brand-link {
-  font-weight: 700;
-  letter-spacing: 0.2px;
 }
 
 .app-nav-link {
@@ -119,125 +169,11 @@ select:focus {
   background: rgba(208, 213, 206, 0.55);
 }
 
-.app-main {
-  flex: 1;
-  padding: 20px 16px 40px;
-}
 
-.app-container {
-  max-width: var(--app-max-width);
-  margin: 0 auto;
-}
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
 
-.app-shell {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.app-topbar {
-  border-bottom: 1px solid var(--app-border);
-  background: var(--app-bg);
-}
-
-.app-topbar__inner {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 16px;
-  max-width: var(--app-max-width);
-  margin: 0 auto;
-}
-
-.app-topbar__spacer {
-  flex: 1;
-}
-
-/* ---------- Placeholder Global Loading ---------- */
-
-.app-loading {
-  height: 2px;
-  width: 100%;
-  background: transparent;
-  overflow: hidden;
-}
-
-.app-loading-bar {
-  height: 2px;
-  width: 35%;
-  transform: translateX(-100%);
-  background: rgba(60, 87, 89, 0.35);
-  animation: app-loading-slide 1.2s infinite linear;
-}
-
-@keyframes app-loading-slide {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(320%);
-  }
-}
-
-/* ---------- A11y utilities ---------- */
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
-}
-
-/* ---------- repo-scope ---------- */
-
-.repo-selector__select {
-  flex: 1;
-  min-width: 160px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--app-border);
-  background: var(--app-surface);
-  color: var(--app-fg);
-}
-
-.repo-selector__row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.repo-selector__label {
-  font-size: 14px;        /* was 12px */
-  color: var(--app-muted);
-  width: auto;            /* stop forcing tiny label column */
-  min-width: 44px;        /* keeps alignment without looking cramped */
-}
-
-.repo-selector__select {
-  flex: 1;
-  min-width: 160px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--app-border);
-  background: transparent;
-  color: var(--app-fg);
-}
-
-.repo-selector__status {
-  font-size: 12px;
-  color: var(--app-muted);
-}
-
-.repo-selector__muted {
-  color: var(--app-muted);
-}
-
-/* ---------- Sidebar ---------- */
 .sidebar {
   width: 84px;
   background: var(--hazy-ink);
@@ -318,7 +254,10 @@ select:focus {
   place-items: center;
 }
 
-/* ---------- Page Header ---------- */
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
 
 .page-header {
   padding: 10px 0 12px;
@@ -328,12 +267,11 @@ select:focus {
 .page-header__inner {
   display: grid;
   grid-template-columns: 1fr auto auto;
-  align-items: end; /* key: bottoms align */
+  align-items: end;
   column-gap: 18px;
   row-gap: 10px;
 }
 
-/* left column: title + chip */
 .page-header__left {
   display: grid;
   gap: 6px;
@@ -360,14 +298,12 @@ select:focus {
   border-radius: 999px;
 }
 
-/* center + right should sit on the same baseline as the chip row */
 .page-header__center,
 .page-header__right {
   display: flex;
-  align-items: flex-end; /* match the chip baseline */
+  align-items: flex-end;
   justify-content: flex-end;
   gap: 12px;
-  /*padding-bottom: 0px;*/
 }
 
 @media (max-width: 900px) {
@@ -376,19 +312,323 @@ select:focus {
     justify-items: stretch;
   }
 
-  .page-header__center {
-    justify-content: flex-start;
-  }
-
+  .page-header__center,
   .page-header__right {
     justify-content: flex-start;
   }
 }
 
-/* ---------- Workflows page ---------- */
+
+/* ============================================================
+   REPO SELECTOR
+   ============================================================ */
+
+.repo-selector__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.repo-selector__label {
+  font-size: 14px;
+  color: var(--app-muted);
+  width: auto;
+  min-width: 44px;
+}
+
+.repo-selector__select {
+  flex: 1;
+  min-width: 160px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  background: transparent;
+  color: var(--app-fg);
+}
+
+.repo-selector__status {
+  font-size: 12px;
+  color: var(--app-muted);
+}
+
+.repo-selector__muted {
+  color: var(--app-muted);
+}
+
+
+/* ============================================================
+   REUSABLE COMPONENTS
+   ============================================================ */
+
+/* ---------- Card ---------- */
+
+.card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.card__titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.card__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  border: 1px solid var(--app-border);
+  background: rgba(208, 213, 206, 0.35);
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: rgba(208, 213, 206, 0.55);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background: var(--app-accent);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #ffffff;
+}
+
+.btn--primary:hover {
+  filter: brightness(0.95);
+}
+
+.btn--secondary {
+  background: rgba(208, 213, 206, 0.35);
+  border: 1px solid var(--app-border);
+  color: var(--app-fg);
+}
+
+.btn--secondary:hover {
+  background: rgba(208, 213, 206, 0.55);
+}
+
+.btn--danger {
+  background: transparent;
+  color: var(--app-danger);
+}
+
+a.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+/* ---------- Toggle ---------- */
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle__input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toggle__track {
+  width: 38px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(208, 213, 206, 0.55);
+  border: 1px solid var(--app-border);
+  position: relative;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.toggle__track::after {
+  content: "";
+  position: absolute;
+  top: 0.5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
+  transition: transform 160ms ease;
+}
+
+.toggle__input:checked + .toggle__track {
+  background: var(--app-accent);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.toggle__input:checked + .toggle__track::after {
+  transform: translateX(20px);
+}
+
+.toggle__input:focus-visible + .toggle__track {
+  outline: 2px solid rgba(60, 87, 89, 0.35);
+  outline-offset: 2px;
+}
+
+.toggle__label {
+  color: var(--app-fg);
+}
+
+.toggle--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------- Pills ---------- */
+
+.pill-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pill {
+  appearance: none;
+  border: 1px solid var(--app-border);
+  background: rgba(208, 213, 206, 0.35); /* hazy-fog tint */
+  color: var(--app-fg);
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.pill:hover {
+  border-color: rgba(60, 87, 89, 0.35);
+}
+
+.pill--selected {
+  background: var(--app-accent-2); /* hazy-mint */
+  border-color: rgba(60, 87, 89, 0.55);
+}
+
+.pill__text {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ---------- Feedback ---------- */
+
+.feedback {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--app-border);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.feedback--success {
+  border-color: rgba(60, 87, 89, 0.35);
+}
+
+.feedback--error {
+  border-color: rgba(176, 0, 32, 0.25);
+}
+
+/* ---------- UI state (empty / error / loading) ---------- */
+
+.ui-state {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  max-width: 720px;
+}
+
+.ui-state__title {
+  margin: 0;
+  font-weight: 700;
+  color: var(--app-fg);
+}
+
+.ui-state__body {
+  margin: 0;
+  color: var(--app-muted);
+}
+
+.ui-state__actions {
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ui-state--error .ui-state__body {
+  color: var(--app-danger);
+}
+
+/* ---------- Loading bar ---------- */
+
+.app-loading {
+  height: 2px;
+  width: 100%;
+  background: transparent;
+  overflow: hidden;
+}
+
+.app-loading-bar {
+  height: 2px;
+  width: 35%;
+  transform: translateX(-100%);
+  background: rgba(60, 87, 89, 0.35);
+  animation: app-loading-slide 1.2s infinite linear;
+}
+
+@keyframes app-loading-slide {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(320%); }
+}
+
+/* ---------- Form helpers ---------- */
+
+.form-error {
+  margin: 6px 0 0;
+  color: var(--app-danger);
+  font-size: 13px;
+}
+
+/* ---------- A11y ---------- */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+
+/* ============================================================
+   WORKFLOWS PAGE
+   ============================================================ */
 
 .workflows-page {
-  margin-top: 16px; /* spacing between PageHeader and content */
+  margin-top: 16px;
 }
 
 .workflows-page__status {
@@ -448,7 +688,7 @@ select:focus {
 .workflows-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed; /* KEY: column widths become predictable */
+  table-layout: fixed;
 }
 
 .workflows-table thead th {
@@ -467,25 +707,19 @@ select:focus {
   vertical-align: middle;
 }
 
-/* Column sizing (tune these numbers if you want tighter/looser) */
+/* Column sizing */
 .workflows-table th:nth-child(1),
-.workflows-table td:nth-child(1) {
-  width: 220px; /* Name */
-}
+.workflows-table td:nth-child(1) { width: 220px; } /* Name    */
 
 .workflows-table th:nth-child(2),
-.workflows-table td:nth-child(2) {
-  width: 280px; /* Trigger  */
-}
+.workflows-table td:nth-child(2) { width: 280px; } /* Trigger */
 
 .workflows-table th:nth-child(3),
-.workflows-table td:nth-child(3) {
-  width: 120px; /* Status */
-}
+.workflows-table td:nth-child(3) { width: 120px; } /* Status  */
 
 .workflows-table th:nth-child(4),
 .workflows-table td:nth-child(4) {
-  width: 260px; /* Actions  */
+  width: 260px;        /* Actions */
   text-align: right;
   white-space: nowrap;
 }
@@ -498,9 +732,8 @@ select:focus {
   white-space: nowrap;
 }
 
-/* Actions layout */
 .workflows-table__actions {
-  display: inline-flex;          /* inline so it respects right-align */
+  display: inline-flex;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
@@ -514,32 +747,14 @@ select:focus {
   padding: 8px 10px;
 }
 
-/* ---------- Workflow editor ---------- */
+
+/* ============================================================
+   WORKFLOW EDITOR
+   ============================================================ */
 
 .workflow-editor {
   margin-top: 16px;
   max-width: 980px;
-}
-
-.card {
-  background: var(--app-surface);
-  border: 1px solid var(--app-border);
-  border-radius: 14px;
-  padding: 16px;
-}
-
-.card__titleRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.card__title {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 700;
 }
 
 .workflow-editor__topGrid {
@@ -574,50 +789,30 @@ select:focus {
 }
 
 @media (max-width: 900px) {
-  .workflow-editor__topGrid {
-    grid-template-columns: 1fr;
-  }
-
+  .workflow-editor__topGrid,
   .workflow-editor__grid {
     grid-template-columns: 1fr;
   }
 }
 
-.pill-grid {
+.workflow-editor__submitRow {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 14px;
 }
 
-.pill {
-  appearance: none;
-  border: 1px solid var(--app-border);
-  background: rgba(208, 213, 206, 0.35); /* hazy-fog tint */
-  color: var(--app-fg);
-  border-radius: 999px;
-  padding: 8px 12px;
-  cursor: pointer;
+.workflow-editor__createMore {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--app-muted);
+  font-size: 14px;
+  user-select: none;
 }
 
-.pill:hover {
-  border-color: rgba(60, 87, 89, 0.35);
-}
-
-.pill--selected {
-  background: var(--app-accent-2); /* hazy-mint */
-  border-color: rgba(60, 87, 89, 0.55);
-}
-
-.pill__text {
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.form-error {
-  margin: 6px 0 0;
-  color: var(--app-danger);
-  font-size: 13px;
-}
+/* ---------- Action cards ---------- */
 
 .actions-stack {
   display: grid;
@@ -657,190 +852,4 @@ select:focus {
   display: flex;
   justify-content: flex-start;
   margin-top: 12px;
-}
-
-.btn {
-  border: 1px solid var(--app-border);
-  background: rgba(208, 213, 206, 0.35);
-  border-radius: 10px;
-  padding: 8px 12px;
-  cursor: pointer;
-}
-
-.btn:hover {
-  background: rgba(208, 213, 206, 0.55);
-}
-
-.btn--primary {
-  background: var(--app-accent);
-  border-color: rgba(0, 0, 0, 0.08);
-  color: #ffffff;
-}
-
-.btn--danger {
-  background: transparent;
-  color: var(--app-danger);
-}
-
-.btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.workflow-editor__submitRow {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 14px;
-}
-
-.feedback {
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--app-border);
-  background: rgba(255, 255, 255, 0.6);
-}
-
-.feedback--success {
-  border-color: rgba(60, 87, 89, 0.35);
-}
-
-.feedback--error {
-  border-color: rgba(176, 0, 32, 0.25);
-}
-
-a.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-}
-
-.btn--secondary {
-  background: rgba(208, 213, 206, 0.35);
-  border: 1px solid var(--app-border);
-  color: var(--app-fg);
-}
-
-.btn--secondary:hover {
-  background: rgba(208, 213, 206, 0.55);
-}
-
-.btn--primary:hover {
-  filter: brightness(0.95);
-}
-
-.workflow-editor__submitRow {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 14px;
-}
-
-.workflow-editor__createMore {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--app-muted);
-  font-size: 14px;
-  user-select: none;
-}
-
-/* ---------- Reusable UI states ---------- */
-
-.ui-state {
-  display: grid;
-  gap: 6px;
-  padding: 12px;
-  border: 1px solid var(--app-border);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  max-width: 720px;
-}
-
-.ui-state__title {
-  margin: 0;
-  font-weight: 700;
-  color: var(--app-fg);
-}
-
-.ui-state__body {
-  margin: 0;
-  color: var(--app-muted);
-}
-
-.ui-state__actions {
-  margin-top: 6px;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.ui-state--error .ui-state__body {
-  color: var(--app-danger);
-}
-
-/* ---------- Toggle (reusable) ---------- */
-
-.toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.toggle__input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.toggle__track {
-  width: 38px;
-  height: 18px; /* match your pixel-perfect setup */
-  border-radius: 999px;
-  background: rgba(208, 213, 206, 0.55);
-  border: 1px solid var(--app-border);
-  position: relative;
-  transition: background 160ms ease, border-color 160ms ease;
-}
-
-/* your pixel-perfect knob */
-.toggle__track::after {
-  content: "";
-  position: absolute;
-  top: 0.5px;
-  left: 0px;
-  width: 14px;
-  height: 14px;
-  border-radius: 999px;
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
-  transition: transform 160ms ease;
-}
-
-.toggle__input:checked + .toggle__track {
-  background: var(--app-accent);
-  border-color: rgba(0, 0, 0, 0.08);
-}
-
-/* move knob to the right edge: track width(38) - knob(16) - left padding(1) - right padding(1) = 20px */
-.toggle__input:checked + .toggle__track::after {
-  transform: translateX(20px);
-}
-
-.toggle__input:focus-visible + .toggle__track {
-  outline: 2px solid rgba(60, 87, 89, 0.35);
-  outline-offset: 2px;
-}
-
-.toggle__label {
-  color: var(--app-fg);
-}
-
-.toggle--disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
