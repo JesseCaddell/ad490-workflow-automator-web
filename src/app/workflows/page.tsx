@@ -66,7 +66,7 @@ export default function WorkflowsPage() {
             <section className="workflows-page">
                 {state === "loading" && <LoadingState message="Loading workflows..." />}
 
-                {state === "error" && <ErrorState message={error ?? "Failed to load workflows."} onRetry={load} />}
+                {state === "error" && <ErrorState message={error ?? "Failed to load workflows."} onRetryAction={load} />}
 
                 {state === "idle" && workflows.length === 0 && (
                     <EmptyState

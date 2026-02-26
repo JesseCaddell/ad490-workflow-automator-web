@@ -65,7 +65,7 @@ export default function EditWorkflowPage({ params }: Props) {
 
             {state === "loading" && <LoadingState message="Loading workflow..." />}
 
-            {state === "error" && <ErrorState message={error ?? "Failed to load workflow."} onRetry={load} />}
+            {state === "error" && <ErrorState message={error ?? "Failed to load workflow."} onRetryAction={load} />}
 
             {state === "ready" && workflow && <WorkflowForm mode="edit" initial={workflow} />}
         </RepoScopeGate>
