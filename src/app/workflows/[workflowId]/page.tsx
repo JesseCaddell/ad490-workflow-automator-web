@@ -1,15 +1,30 @@
+// src/app/workflows/[workflowId]/page.tsx
+
 "use client";
 
+import Link from "next/link";
+import { use } from "react";
 import { useEffect, useState } from "react";
 import { getWorkflow, type Workflow } from "@/lib/api";
 import { WorkflowForm } from "@/components/workflows/WorkflowForm";
 import { useRepoScope } from "@/lib/repoScope/useRepoScope";
 import { RepoScopeGate } from "@/components/repos/RepoScopeGate";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 type LoadState = "loading" | "error" | "ready";
 
-export default function EditWorkflowPage({ params }: { params: { workflowId: string } }) {
-    const { workflowId } = params;
+type Props = {
+    params: Promise<{ workflowId: string }> | { workflowId: string };
+};
+
+export default function EditWorkflowPage({ params }: Props) {
+    const resolvedParams =
+        typeof (params as any)?.then === "function"
+            ? use(params as Promise<{ workflowId: string }>)
+            : (params as { workflowId: string });
+
+    const workflowId = resolvedParams.workflowId;
+
     const { scope } = useRepoScope();
 
     const [state, setState] = useState<LoadState>("loading");
@@ -37,7 +52,14 @@ export default function EditWorkflowPage({ params }: { params: { workflowId: str
 
     return (
         <RepoScopeGate title="Edit Workflow">
-            <h1>Edit Workflow</h1>
+            <PageHeader
+                title="Edit Workflow"
+                rightSlot={
+                    <Link className="app-nav-link" href="/workflows">
+                        Back to Workflows
+                    </Link>
+                }
+            />
 
             {state === "loading" && <p>Loading...</p>}
 

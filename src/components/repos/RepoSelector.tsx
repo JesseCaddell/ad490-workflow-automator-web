@@ -54,7 +54,7 @@ export function RepoSelector() {
             <div className="repo-selector__status" aria-live="polite">
                 {hasValidSelection ? (
                     <span>
-            Active: <strong>{activeLabel}</strong>
+
           </span>
                 ) : (
                     <span className="repo-selector__muted">No repository selected (env missing)</span>
