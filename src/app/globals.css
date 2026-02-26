@@ -266,7 +266,7 @@ select:focus {
 
 .page-header__inner {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr auto 180px;;
   align-items: end;
   column-gap: 18px;
   row-gap: 10px;
@@ -304,6 +304,7 @@ select:focus {
   align-items: flex-end;
   justify-content: flex-end;
   gap: 12px;
+  width: 100%;
 }
 
 @media (max-width: 900px) {
