@@ -16,10 +16,12 @@ export function RepoSelector() {
         return idx >= 0 ? String(idx) : "0";
     }, [options, scope]);
 
-    const activeLabel = useMemo(() => {
-        const match = options.find((opt) => scopesEqual(opt.scope, scope));
-        return match?.label ?? `Repo (${scope.repositoryId})`;
-    }, [options, scope]);
+    // Post-MVP: derive activeLabel here for display in topbar/status
+    // when multiple repos are available via GitHub OAuth.
+    // const activeLabel = useMemo(() => {
+    //     const match = options.find((opt) => scopesEqual(opt.scope, scope));
+    //     return match?.label ?? `Repo (${scope.repositoryId})`;
+    // }, [options, scope]);
 
     function onChange(value: string) {
         const idx = Number(value);
