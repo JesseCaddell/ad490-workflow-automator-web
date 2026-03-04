@@ -4,16 +4,13 @@
 
 import Link from "next/link";
 import { use } from "react";
-import { useEffect, useState } from "react";
-import { getWorkflow, type Workflow } from "@/lib/api";
 import { WorkflowForm } from "@/components/workflows/WorkflowForm";
 import { useRepoScope } from "@/lib/repoScope/useRepoScope";
 import { RepoScopeGate } from "@/components/repos/RepoScopeGate";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingState } from "@/components/ui/states/LoadingState";
 import { ErrorState } from "@/components/ui/states/ErrorState";
-
-type LoadState = "loading" | "error" | "ready";
+import { useWorkflow } from "@/lib/api/hooks/useWorkflows";
 
 type Props = {
     params: Promise<{ workflowId: string }> | { workflowId: string };
@@ -28,29 +25,7 @@ export default function EditWorkflowPage({ params }: Props) {
     const workflowId = resolvedParams.workflowId;
 
     const { scope } = useRepoScope();
-
-    const [state, setState] = useState<LoadState>("loading");
-    const [error, setError] = useState<string | null>(null);
-    const [workflow, setWorkflow] = useState<Workflow | null>(null);
-
-    async function load() {
-        try {
-            setState("loading");
-            setError(null);
-
-            const wf = await getWorkflow(scope, workflowId);
-
-            setWorkflow(wf);
-            setState("ready");
-        } catch (err: any) {
-            setError(err?.message ?? "Failed to load workflow.");
-            setState("error");
-        }
-    }
-
-    useEffect(() => {
-        load();
-    }, [workflowId, scope.installationId, scope.repositoryId]);
+    const { workflow, state, error, reload } = useWorkflow(scope, workflowId);
 
     return (
         <RepoScopeGate title="Edit Workflow">
@@ -63,11 +38,20 @@ export default function EditWorkflowPage({ params }: Props) {
                 }
             />
 
-            {state === "loading" && <LoadingState message="Loading workflow..." />}
+            {(state === "idle" || state === "loading") && (
+                <LoadingState message="Loading workflow..." />
+            )}
 
-            {state === "error" && <ErrorState message={error ?? "Failed to load workflow."} onRetryAction={load} />}
+            {state === "error" && (
+                <ErrorState
+                    message={error ?? "Failed to load workflow."}
+                    onRetryAction={reload}
+                />
+            )}
 
-            {state === "ready" && workflow && <WorkflowForm mode="edit" initial={workflow} />}
+            {state === "success" && workflow && (
+                <WorkflowForm mode="edit" initial={workflow} />
+            )}
         </RepoScopeGate>
     );
 }

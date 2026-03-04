@@ -135,72 +135,66 @@ export function useWorkflow(scope: RepoScope, workflowId: WorkflowId) {
 }
 
 /**
- * Create / Update / Delete mutations
- * (simple, typed, provides loading + error)
+ * Generic mutation hook — shared loading/error/try-catch pattern.
+ * TArgs is the tuple of arguments the mutation function accepts.
+ * TResult is the return type on success.
  */
-type MutationState = {
-    isLoading: boolean;
-    error: string | null;
-};
-
-export function useCreateWorkflow(scope: RepoScope) {
-    const [m, setM] = useState<MutationState>({ isLoading: false, error: null });
+function useMutation<TArgs extends unknown[], TResult = void>(
+    fn: (...args: TArgs) => Promise<TResult>,
+    fallbackError: string
+) {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const mutate = useCallback(
-        async (payload: CreateWorkflowPayload) => {
-            setM({ isLoading: true, error: null });
+        async (...args: TArgs): Promise<TResult> => {
+            setIsLoading(true);
+            setError(null);
             try {
-                const wf = await createWorkflow(scope, payload);
-                setM({ isLoading: false, error: null });
-                return wf;
+                const result = await fn(...args);
+                setIsLoading(false);
+                return result;
             } catch (err: any) {
-                setM({ isLoading: false, error: err?.message ?? "Failed to create workflow." });
+                setIsLoading(false);
+                setError(err?.message ?? fallbackError);
                 throw err;
             }
         },
+        [fn, fallbackError]
+    );
+
+    return { mutate, isLoading, error };
+}
+
+/**
+ * Create / Update / Delete mutations
+ */
+export function useCreateWorkflow(scope: RepoScope) {
+    const fn = useCallback(
+        (payload: CreateWorkflowPayload) => createWorkflow(scope, payload),
         [scope]
     );
 
-    return { create: mutate, isLoading: m.isLoading, error: m.error };
+    const { mutate, isLoading, error } = useMutation(fn, "Failed to create workflow.");
+    return { create: mutate, isLoading, error };
 }
 
 export function useUpdateWorkflow(scope: RepoScope) {
-    const [m, setM] = useState<MutationState>({ isLoading: false, error: null });
-
-    const mutate = useCallback(
-        async (id: WorkflowId, payload: PatchWorkflowPayload) => {
-            setM({ isLoading: true, error: null });
-            try {
-                const wf = await updateWorkflow(scope, id, payload);
-                setM({ isLoading: false, error: null });
-                return wf;
-            } catch (err: any) {
-                setM({ isLoading: false, error: err?.message ?? "Failed to update workflow." });
-                throw err;
-            }
-        },
+    const fn = useCallback(
+        (id: WorkflowId, payload: PatchWorkflowPayload) => updateWorkflow(scope, id, payload),
         [scope]
     );
 
-    return { update: mutate, isLoading: m.isLoading, error: m.error };
+    const { mutate, isLoading, error } = useMutation(fn, "Failed to update workflow.");
+    return { update: mutate, isLoading, error };
 }
 
 export function useDeleteWorkflow(scope: RepoScope) {
-    const [m, setM] = useState<MutationState>({ isLoading: false, error: null });
-
-    const mutate = useCallback(
-        async (id: WorkflowId) => {
-            setM({ isLoading: true, error: null });
-            try {
-                await deleteWorkflow(scope, id);
-                setM({ isLoading: false, error: null });
-            } catch (err: any) {
-                setM({ isLoading: false, error: err?.message ?? "Failed to delete workflow." });
-                throw err;
-            }
-        },
+    const fn = useCallback(
+        (id: WorkflowId) => deleteWorkflow(scope, id),
         [scope]
     );
 
-    return { remove: mutate, isLoading: m.isLoading, error: m.error };
+    const { mutate, isLoading, error } = useMutation(fn, "Failed to delete workflow.");
+    return { remove: mutate, isLoading, error };
 }

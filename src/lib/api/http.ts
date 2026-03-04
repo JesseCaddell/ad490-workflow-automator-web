@@ -24,26 +24,14 @@ function getApiBaseUrl(): string {
     return base.replace(/\/+$/, "");
 }
 
-/**
- * Matches API requireScope() in src/routes/workflows.ts:
- * Headers:
- *   x-installation-id
- *   x-repository-id
- */
-function buildScopeHeaders(scope: RepoScope): Record<string, string> {
-    return {
-        "x-installation-id": String(scope.installationId),
-        "x-repository-id": String(scope.repositoryId),
-    };
-}
-
 export async function requestApi<T>(opts: RequestOptions): Promise<T> {
     const baseUrl = getApiBaseUrl();
     const url = `${baseUrl}${opts.path.startsWith("/") ? "" : "/"}${opts.path}`;
 
     const headers: Record<string, string> = {
         Accept: "application/json",
-        ...buildScopeHeaders(opts.scope),
+        "x-installation-id": String(opts.scope.installationId),
+        "x-repository-id": String(opts.scope.repositoryId),
     };
 
     const hasBody = opts.body !== undefined && opts.body !== null;
@@ -77,7 +65,7 @@ export async function requestApi<T>(opts: RequestOptions): Promise<T> {
     }
 
     if (!res.ok) {
-        if (envelope && typeof envelope === "object" && "ok" in envelope && envelope.ok === false) {
+        if (envelope && typeof envelope === "object" && "ok" in envelope && !envelope.ok) {
             throw new ApiError(envelope.error.message, res.status, envelope.error);
         }
         throw new ApiError(
