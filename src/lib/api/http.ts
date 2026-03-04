@@ -65,7 +65,7 @@ export async function requestApi<T>(opts: RequestOptions): Promise<T> {
     }
 
     if (!res.ok) {
-        if (envelope && typeof envelope === "object" && "ok" in envelope && envelope.ok === false) {
+        if (envelope && typeof envelope === "object" && "ok" in envelope && !envelope.ok) {
             throw new ApiError(envelope.error.message, res.status, envelope.error);
         }
         throw new ApiError(

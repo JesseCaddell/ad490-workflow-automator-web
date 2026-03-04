@@ -259,7 +259,9 @@ export function WorkflowForm({ mode, initial }: Props) {
                     </div>
 
                     <div className="workflow-editor__toggleRow">
-                        <Toggle checked={enabled} onChange={setEnabled} label="Enabled" />
+                        <Toggle checked={enabled} onChange={setEnabled}>
+                            {enabled ? "Enabled" : "Disabled"}
+                        </Toggle>
                     </div>
                 </div>
             </section>
