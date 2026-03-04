@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import {listWorkflows, deleteWorkflow, type Workflow, updateWorkflow} from "@/lib/api";
+import type { Workflow } from "@/lib/api";
 import { useRepoScope } from "@/lib/repoScope/useRepoScope";
 import { RepoScopeGate } from "@/components/repos/RepoScopeGate";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -12,17 +12,33 @@ import { LoadingState } from "@/components/ui/states/LoadingState";
 import { EmptyState } from "@/components/ui/states/EmptyState";
 import { ErrorState } from "@/components/ui/states/ErrorState";
 import { Toggle } from "@/components/ui/Toggle";
-
-type LoadState = "idle" | "loading" | "error";
+import { useWorkflowsList, useUpdateWorkflow, useDeleteWorkflow } from "@/lib/api/hooks/useWorkflows";
 
 export default function WorkflowsPage() {
     const { scope } = useRepoScope();
 
+    const {
+        workflows: fetchedWorkflows,
+        state,
+        error,
+        reload,
+    } = useWorkflowsList(scope);
+
+    const { update } = useUpdateWorkflow(scope);
+    const { remove } = useDeleteWorkflow(scope);
+
+    // Local copy for optimistic toggle updates
     const [workflows, setWorkflows] = useState<Workflow[]>([]);
-    const [state, setState] = useState<LoadState>("idle");
-    const [error, setError] = useState<string | null>(null);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
+
+    // Sync local state only when a fetch completes successfully
+    useEffect(() => {
+        if (state === "success") {
+            setWorkflows(fetchedWorkflows);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [state]);
 
     async function toggleEnabled(id: string, currentlyEnabled: boolean) {
         if (togglingIds.has(id)) return;
@@ -39,8 +55,7 @@ export default function WorkflowsPage() {
         });
 
         try {
-            // Minimal PATCH payload
-            await updateWorkflow(scope, id, { enabled: !currentlyEnabled });
+            await update(id, { enabled: !currentlyEnabled });
         } catch (err: any) {
             // Revert on failure
             setWorkflows((prev) =>
@@ -56,34 +71,19 @@ export default function WorkflowsPage() {
         }
     }
 
-    async function load() {
-        try {
-            setState("loading");
-            setError(null);
-
-            const data = await listWorkflows(scope);
-            setWorkflows(data);
-            setState("idle");
-        } catch (err: any) {
-            setError(err?.message ?? "Failed to load workflows.");
-            setState("error");
-        }
-    }
-
     async function handleDelete(id: string) {
         try {
-            await deleteWorkflow(scope, id);
+            await remove(id);
             setConfirmDeleteId(null);
-            await load();
+            reload();
         } catch (err: any) {
             alert(err?.message ?? "Failed to delete workflow.");
         }
     }
 
-    useEffect(() => {
-        load();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [scope.installationId, scope.repositoryId]);
+    const isLoading = state === "idle" || state === "loading";
+    const isError = state === "error";
+    const isReady = state === "success";
 
     return (
         <RepoScopeGate title="Workflows">
@@ -97,18 +97,23 @@ export default function WorkflowsPage() {
             />
 
             <section className="workflows-page">
-                {state === "loading" && <LoadingState message="Loading workflows..." />}
+                {isLoading && <LoadingState message="Loading workflows..." />}
 
-                {state === "error" && <ErrorState message={error ?? "Failed to load workflows."} onRetryAction={load} />}
+                {isError && (
+                    <ErrorState
+                        message={error ?? "Failed to load workflows."}
+                        onRetryAction={reload}
+                    />
+                )}
 
-                {state === "idle" && workflows.length === 0 && (
+                {isReady && workflows.length === 0 && (
                     <EmptyState
                         title="No workflows yet."
                         body="Create your first automation to get started."
                     />
                 )}
 
-                {state === "idle" && workflows.length > 0 && (
+                {isReady && workflows.length > 0 && (
                     <div className="workflows-page__tableWrap">
                         <table className="workflows-table">
                             <thead>
@@ -157,7 +162,6 @@ export default function WorkflowsPage() {
                                                     >
                                                         Confirm
                                                     </button>
-
                                                 </>
                                             ) : (
                                                 <button
