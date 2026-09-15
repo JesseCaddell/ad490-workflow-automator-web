@@ -11,7 +11,7 @@ export function Sidebar() {
         <aside className="sidebar" aria-label="Primary navigation">
             <div className="sidebar__top">
                 <Link className="sidebar__logo" href="/dashboard" aria-label="Flowarden home" title="Flowarden">
-                    <div className="sidebar__logoMark" aria-hidden="true" />
+                    <img src="/icon.png" alt="" aria-hidden="true" className="sidebar__logoMark" width={32} height={32} />
                 </Link>
             </div>
 
@@ -24,7 +24,7 @@ export function Sidebar() {
             </div>
 
             <div className="sidebar__bottom">
-                <div className="sidebar-item sidebar-item--disabled" aria-disabled="true" title="Account (after MVP)">
+                <div className="sidebar-item sidebar-item--disabled" aria-disabled="true" title="Account (coming soon)">
                     <div className="sidebar-item__icon" aria-hidden="true">
                         <User size={22} />
                     </div>

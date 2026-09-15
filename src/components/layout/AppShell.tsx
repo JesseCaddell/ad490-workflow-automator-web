@@ -10,8 +10,8 @@ type AppShellProps = {
 };
 
 function GlobalLoadingIndicator() {
-    // MVP: keep the "slot" but do not animate nonstop.
-    // Post-MVP: wire to navigation + fetch state if desired.
+    // For now: keep the "slot" but do not animate nonstop.
+    // TODO: wire to navigation + fetch state if desired.
     return <div className="app-loading" aria-hidden="true" />;
 }
 
