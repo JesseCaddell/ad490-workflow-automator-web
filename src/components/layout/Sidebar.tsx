@@ -3,15 +3,23 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Home, Workflow, FileText, Settings, User } from "lucide-react";
 import { SidebarNavItem } from "@/components/navigation/SidebarNavItem";
+import logoMark from "../../app/icon.png";
 
 export function Sidebar() {
     return (
         <aside className="sidebar" aria-label="Primary navigation">
             <div className="sidebar__top">
                 <Link className="sidebar__logo" href="/dashboard" aria-label="Flowarden home" title="Flowarden">
-                    <div className="sidebar__logoMark" aria-hidden="true" />
+                    <Image
+                        src={logoMark}
+                        alt=""
+                        aria-hidden="true"
+                        className="sidebar__logoMark"
+                        priority
+                    />
                 </Link>
             </div>
 
