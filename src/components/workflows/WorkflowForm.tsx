@@ -44,6 +44,21 @@ function defaultParamsFor(type: SupportedActionType): Record<string, unknown> {
     }
 }
 
+function normalizeLabel(v: unknown): string | undefined {
+    return typeof v === "string" && v.trim().length > 0 ? v.trim().toLowerCase() : undefined;
+}
+
+function deepEqual(a: unknown, b: unknown): boolean {
+    if (a === b) return true;
+    if (typeof a !== "object" || a === null || typeof b !== "object" || b === null) return false;
+    const aKeys = Object.keys(a as Record<string, unknown>);
+    const bKeys = Object.keys(b as Record<string, unknown>);
+    if (aKeys.length !== bKeys.length) return false;
+    return aKeys.every((k) =>
+        deepEqual((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k])
+    );
+}
+
 function validateAction(step: ActionStep): string | null {
     if (!step.type) return "Select an action type.";
 
@@ -141,6 +156,36 @@ export function WorkflowForm({ mode, initial }: Props) {
             if (!type) continue;
             if (!(SUPPORTED_ACTION_TYPES as readonly string[]).includes(type)) {
                 out.actionErrors[i] = "Action type is not supported.";
+            }
+        }
+
+        // Cross-action checks: flag contradicting or duplicate actions.
+        // Only annotate the later action, and only if it doesn't already have an error.
+        for (let j = 0; j < actions.length; j++) {
+            if (out.actionErrors[j]) continue;
+
+            for (let i = 0; i < j; i++) {
+                const a = actions[i];
+                const b = actions[j];
+                if (!a || !b) continue;
+
+                if (a.type === b.type && deepEqual(a.params, b.params)) {
+                    out.actionErrors[j] = `Duplicate of action #${i + 1}: identical action and params.`;
+                    break;
+                }
+
+                const isAddRemoveLabelPair =
+                    (a.type === "addLabel" && b.type === "removeLabel") ||
+                    (a.type === "removeLabel" && b.type === "addLabel");
+
+                if (isAddRemoveLabelPair) {
+                    const labelA = normalizeLabel(a.params.label);
+                    const labelB = normalizeLabel(b.params.label);
+                    if (labelA && labelB && labelA === labelB) {
+                        out.actionErrors[j] = `Conflicts with action #${i + 1}: both target label "${labelA}".`;
+                        break;
+                    }
+                }
             }
         }
 
