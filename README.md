@@ -168,7 +168,7 @@ NEXT_PUBLIC_DEMO_REPOSITORY_ID=YOUR_REPO_ID
 Notes:
 
 - `NEXT_PUBLIC_API_BASE_URL` must match your backend port.
-- Demo values are used for MVP scope selection.
+- Demo values are used for scope selection.
 
 ---
 
@@ -189,7 +189,7 @@ Ensure the API is running on port 3001.
 
 ---
 
-# MVP Capabilities
+# Current Capabilities
 
 - Repository scope selection
 - List workflows
@@ -203,7 +203,7 @@ Ensure the API is running on port 3001.
 
 ---
 
-# Known MVP Limitations
+# Known Current Limitations
 
 - One trigger per workflow
 - No visual condition builder

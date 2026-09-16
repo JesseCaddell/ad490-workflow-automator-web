@@ -1,4 +1,4 @@
-# Creating a Workflow (MVP)
+# Creating a Workflow
 
 This document explains how workflows are created and managed in the AD490 Workflow Automator Web application.
 
@@ -27,7 +27,7 @@ Scope is persisted in localStorage for the current browser session.
 
 ---
 
-# Workflow Model (MVP)
+# Workflow Model
 
 A workflow consists of:
 
@@ -36,7 +36,7 @@ A workflow consists of:
 3. One trigger
 4. One or more sequential actions (up to 25)
 
-### Current MVP Rules
+### Current Rules
 
 - Only one trigger per workflow
 - No conditional branching
@@ -85,7 +85,7 @@ Workflow name must be unique within the selected repository scope.
 
 Choose one trigger type.
 
-MVP supports a single trigger per workflow.
+Currently supports a single trigger per workflow.
 
 Examples (depending on backend configuration):
 
@@ -219,7 +219,7 @@ If the server rejects a workflow:
 
 ---
 
-# MVP Limitations (Workflow Builder)
+# Current Limitations (Workflow Builder)
 
 - No multi-trigger workflows
 - No AND/OR condition builder

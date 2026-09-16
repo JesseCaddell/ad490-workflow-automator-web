@@ -1,6 +1,6 @@
 # Smoke Test Checklist
 
-Manual verification steps for Flowarden MVP. Run after any significant changes.
+Manual verification steps for Flowarden. Run after any significant changes.
 
 ## Prerequisites
 
