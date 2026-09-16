@@ -15,7 +15,7 @@ type RepoOption = {
 /**
  * DEMO IMPLEMENTATION NOTE:
  *
- * For MVP/demo, we derive a single repository option from
+ * For now (demo), we derive a single repository option from
  * NEXT_PUBLIC_DEMO_INSTALLATION_ID and NEXT_PUBLIC_DEMO_REPOSITORY_ID.
  *
  * In production:

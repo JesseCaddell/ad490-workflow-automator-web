@@ -32,7 +32,7 @@ export function Sidebar() {
             </div>
 
             <div className="sidebar__bottom">
-                <div className="sidebar-item sidebar-item--disabled" aria-disabled="true" title="Account (after MVP)">
+                <div className="sidebar-item sidebar-item--disabled" aria-disabled="true" title="Account (coming soon)">
                     <div className="sidebar-item__icon" aria-hidden="true">
                         <User size={22} />
                     </div>

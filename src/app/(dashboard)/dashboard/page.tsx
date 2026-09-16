@@ -149,7 +149,7 @@ export default function DashboardPage() {
                 updatedAt: getWorkflowUpdatedAt(w),
             }));
 
-        // Placeholder: requires execution logs (post-MVP)
+        // TODO: requires execution logs
         const failingEnabled = 0;
 
         return { total, enabled, disabled, totalActions, recent, failingEnabled };
@@ -204,7 +204,7 @@ export default function DashboardPage() {
                     <Card title="GitHub Auth (Coming Soon)">
                         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                             <div style={{ opacity: 0.9 }}>
-                                This MVP uses a demo installation + repository scope from environment variables.
+                                This currently uses a demo installation + repository scope from environment variables.
                             </div>
                             <div style={{ opacity: 0.75 }}>
                                 Future: authenticate user, list installations/repos dynamically, and populate action inputs from GitHub data.
@@ -444,7 +444,7 @@ function TwoStatCard({
                 <div style={{ marginTop: 14 }}>{children}</div>
             ) : (
                 <div style={{ opacity: 0.65, marginTop: 14, textAlign: "center" }}>
-                    Execution health (success/failure) requires run logs (Post-MVP).
+                    Execution health (success/failure) requires run logs (coming soon).
                 </div>
             )}
         </div>
